@@ -1,0 +1,26 @@
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# dotenv (templates committed, *.local gitignored)
+.env
+.env.*.local
+
+# Go build artifacts
+.tmp/
+tmp/
+build-errors.log
+
+# Node
+node_modules/
+
+# Claude personal settings (skills/ symlinks are tracked)
+.claude/settings.local.json
+
+references/

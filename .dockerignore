@@ -1,0 +1,11 @@
+.git
+.gitignore
+.claude
+.agents
+references
+web/node_modules
+**/*.log
+.env
+.env.*.local
+.tmp
+tmp

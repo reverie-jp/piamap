@@ -1,0 +1,43 @@
+services:
+  piamap-db:
+    container_name: piamap-db
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: piamap
+      POSTGRES_PASSWORD: piamap
+      POSTGRES_DB: piamap_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - piamap-db-data:/var/lib/postgresql/data
+
+  piamap-api:
+    container_name: piamap-api
+    build:
+      context: .
+    volumes:
+      - .:/piamap-api:cached
+    ports:
+      - "37611:37611"
+      - "50051:50051"
+    env_file:
+      - .env.development.local
+    command: sleep infinity
+    depends_on:
+      - piamap-db
+
+  piamap-pgadmin:
+    container_name: piamap-pgadmin
+    image: dpage/pgadmin4:9.5
+    ports:
+      - "8888:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=piamap@example.com
+      - PGADMIN_DEFAULT_PASSWORD=piamap
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+    depends_on:
+      - piamap-db
+
+volumes:
+  piamap-db-data:
