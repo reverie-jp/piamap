@@ -1,0 +1,168 @@
+syntax = "proto3";
+
+package piano.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+service PianoService {
+  // ピアノ詳細取得 (ゲスト可)。
+  rpc GetPiano(GetPianoRequest) returns (GetPianoResponse) {}
+
+  // 地図用検索: bbox / center+radius のいずれかで絞る (ゲスト可)。
+  rpc SearchPianos(SearchPianosRequest) returns (SearchPianosResponse) {}
+
+  // ピアノ登録 (認証必須、自動 active = 案 A、piano_edits に operation='create' で記録)。
+  rpc CreatePiano(CreatePianoRequest) returns (CreatePianoResponse) {}
+
+  // ピアノ編集 (認証必須、piano_edits に operation='update' / 'status_change' / 'kind_change' で記録)。
+  rpc UpdatePiano(UpdatePianoRequest) returns (UpdatePianoResponse) {}
+}
+
+// Enums (DB ENUM と 1:1)
+
+enum PianoStatus {
+  PIANO_STATUS_UNSPECIFIED = 0;
+  PIANO_STATUS_PENDING = 1;
+  PIANO_STATUS_ACTIVE = 2;
+  PIANO_STATUS_TEMPORARY = 3;
+  PIANO_STATUS_REMOVED = 4;
+}
+
+enum PianoType {
+  PIANO_TYPE_UNSPECIFIED = 0;
+  PIANO_TYPE_GRAND = 1;
+  PIANO_TYPE_UPRIGHT = 2;
+  PIANO_TYPE_ELECTRONIC = 3;
+  PIANO_TYPE_UNKNOWN = 4;
+}
+
+enum PianoKind {
+  PIANO_KIND_UNSPECIFIED = 0;
+  PIANO_KIND_STREET = 1;
+  PIANO_KIND_PRACTICE_ROOM = 2;
+  PIANO_KIND_OTHER = 3;
+}
+
+enum PianoAvailability {
+  PIANO_AVAILABILITY_UNSPECIFIED = 0;
+  PIANO_AVAILABILITY_REGULAR = 1;
+  PIANO_AVAILABILITY_IRREGULAR = 2;
+  PIANO_AVAILABILITY_EVENT_ONLY = 3;
+  PIANO_AVAILABILITY_WEATHER_DEPENDENT = 4;
+}
+
+// Common types
+
+message LatLng {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message LatLngBounds {
+  LatLng southwest = 1;
+  LatLng northeast = 2;
+}
+
+// Resources
+
+// ピアノ全体ビュー。AIP-122: name = "pianos/{ulid}"。
+message Piano {
+  string name = 1;
+  string display_name = 2;
+  optional string description = 3;
+  LatLng location = 4;
+
+  optional string address = 5;
+  optional string prefecture = 6;
+  optional string city = 7;
+
+  PianoKind kind = 8;
+  optional string venue_type = 9;
+  PianoType piano_type = 10;
+  string piano_brand = 11;
+  optional string piano_model = 12;
+  optional int32 manufacture_year = 13;
+
+  optional string hours = 14;
+  PianoStatus status = 15;
+  PianoAvailability availability = 16;
+  optional string availability_note = 17;
+
+  optional google.protobuf.Timestamp install_time = 18;
+  optional google.protobuf.Timestamp remove_time = 19;
+  // 登録者 (users/{custom_id} or 空文字列 if SET NULL)。
+  string creator = 20;
+
+  // 集計
+  int32 post_count = 21;
+  // 平均評価 (post_count = 0 のときは 0.0、UI 側で「未評価」表示)。
+  double rating_average = 22;
+  // 5 環境属性の平均 (count = 0 のとき 0)。
+  double ambient_noise_average = 23;
+  double foot_traffic_average = 24;
+  double resonance_average = 25;
+  double key_touch_weight_average = 26;
+  double tuning_quality_average = 27;
+  // ユーザーリスト集計
+  int32 wishlist_count = 28;
+  int32 visited_count = 29;
+  int32 favorite_count = 30;
+
+  google.protobuf.Timestamp create_time = 31;
+  google.protobuf.Timestamp update_time = 32;
+
+  // SearchPianos 結果でセットされる (詳細取得時は 0)。
+  optional double distance_m = 33;
+}
+
+// Request / Response
+
+message GetPianoRequest {
+  // "pianos/{ulid}"
+  string name = 1;
+}
+
+message GetPianoResponse {
+  Piano piano = 1;
+}
+
+message SearchPianosRequest {
+  // 表示エリアの bbox (UI 側のマップビューポート)。bounds 指定時は center / radius_m は無視。
+  optional LatLngBounds bounds = 1;
+  // bounds 不在時はこちら: 中心 + 半径 (m) で円形検索。
+  optional LatLng center = 2;
+  optional double radius_m = 3;
+
+  // 結果上限 (デフォルト 200、地図クラスタリングを考慮)。
+  optional int32 limit = 4;
+
+  // フィルタ
+  optional PianoKind kind = 5;
+  optional PianoType piano_type = 6;
+  // rating 平均の最低値 (1..5)。0 / 未指定で無条件。
+  optional double min_rating_average = 7;
+}
+
+message SearchPianosResponse {
+  repeated Piano pianos = 1;
+}
+
+message CreatePianoRequest {
+  Piano piano = 1;
+}
+
+message CreatePianoResponse {
+  Piano piano = 1;
+}
+
+message UpdatePianoRequest {
+  Piano piano = 1;
+  google.protobuf.FieldMask update_mask = 2;
+  // 編集内容のコメント (任意、編集ログに残る)。
+  optional string edit_summary = 3;
+}
+
+message UpdatePianoResponse {
+  Piano piano = 1;
+}

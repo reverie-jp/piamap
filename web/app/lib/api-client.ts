@@ -1,0 +1,30 @@
+import { createPromiseClient, type Interceptor } from "@connectrpc/connect";
+import { createConnectTransport } from "@connectrpc/connect-web";
+
+import { AccountService } from "./gen/account/v1/account_connect";
+import { PianoService } from "./gen/piano/v1/piano_connect";
+import { UserService } from "./gen/user/v1/user_connect";
+import { getAccessToken } from "./auth";
+
+const baseUrl =
+  (typeof window !== "undefined" && (window as any).PIAMAP_API_URL) ||
+  "http://localhost:50051";
+
+// dev token があれば Authorization ヘッダに乗せる。
+const authInterceptor: Interceptor = (next) => async (req) => {
+  const token = getAccessToken();
+  if (token) {
+    req.header.set("Authorization", `Bearer ${token}`);
+  }
+  return await next(req);
+};
+
+const transport = createConnectTransport({
+  baseUrl,
+  useBinaryFormat: false,
+  interceptors: [authInterceptor],
+});
+
+export const accountClient = createPromiseClient(AccountService, transport);
+export const pianoClient = createPromiseClient(PianoService, transport);
+export const userClient = createPromiseClient(UserService, transport);

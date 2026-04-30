@@ -1,5 +1,8 @@
 // Package resourcename translates between internal identifiers and
 // AIP-122-style resource names ("collection/id" hierarchical strings).
+//
+// 解析失敗は xerrors.ErrInvalidArgument を返す (handler 側で個別に
+// Wrap せずに済むよう、ここで分類を確定させる)。
 package resourcename
 
 import (
@@ -7,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/reverie-jp/piamap/internal/platform/ulid"
+	"github.com/reverie-jp/piamap/internal/platform/xerrors"
 )
 
 const (
@@ -20,6 +24,18 @@ const (
 	reportsCollection       = "reports"
 )
 
+func invalid(kind, name string) error {
+	return xerrors.ErrInvalidArgument.WithCause(errors.New("invalid " + kind + " resource name: " + name))
+}
+
+func parseULID(s string) (ulid.ULID, error) {
+	id, err := ulid.Parse(s)
+	if err != nil {
+		return ulid.ULID{}, xerrors.ErrInvalidArgument.WithCause(err)
+	}
+	return id, nil
+}
+
 // User: users/{custom_id}
 
 func FormatUser(customID string) string {
@@ -32,7 +48,7 @@ func ParseUser(name string) (string, error) {
 		return "", err
 	}
 	if len(segs) != 2 || segs[0] != usersCollection || segs[1] == "" {
-		return "", errors.New("invalid user resource name: " + name)
+		return "", invalid("user", name)
 	}
 	return segs[1], nil
 }
@@ -49,9 +65,9 @@ func ParsePiano(name string) (ulid.ULID, error) {
 		return ulid.ULID{}, err
 	}
 	if len(segs) != 2 || segs[0] != pianosCollection || segs[1] == "" {
-		return ulid.ULID{}, errors.New("invalid piano resource name: " + name)
+		return ulid.ULID{}, invalid("piano", name)
 	}
-	return ulid.Parse(segs[1])
+	return parseULID(segs[1])
 }
 
 // PianoPhoto: pianos/{piano_id}/photos/{photo_id}
@@ -69,13 +85,13 @@ func ParsePianoPhoto(name string) (pianoID, photoID ulid.ULID, err error) {
 		segs[0] != pianosCollection ||
 		segs[2] != photosCollection ||
 		segs[1] == "" || segs[3] == "" {
-		return ulid.ULID{}, ulid.ULID{}, errors.New("invalid piano photo resource name: " + name)
+		return ulid.ULID{}, ulid.ULID{}, invalid("piano photo", name)
 	}
-	pianoID, err = ulid.Parse(segs[1])
+	pianoID, err = parseULID(segs[1])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
-	photoID, err = ulid.Parse(segs[3])
+	photoID, err = parseULID(segs[3])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
@@ -97,13 +113,13 @@ func ParsePianoComment(name string) (pianoID, commentID ulid.ULID, err error) {
 		segs[0] != pianosCollection ||
 		segs[2] != commentsCollection ||
 		segs[1] == "" || segs[3] == "" {
-		return ulid.ULID{}, ulid.ULID{}, errors.New("invalid piano comment resource name: " + name)
+		return ulid.ULID{}, ulid.ULID{}, invalid("piano comment", name)
 	}
-	pianoID, err = ulid.Parse(segs[1])
+	pianoID, err = parseULID(segs[1])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
-	commentID, err = ulid.Parse(segs[3])
+	commentID, err = parseULID(segs[3])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
@@ -125,13 +141,13 @@ func ParsePianoEdit(name string) (pianoID, editID ulid.ULID, err error) {
 		segs[0] != pianosCollection ||
 		segs[2] != editsCollection ||
 		segs[1] == "" || segs[3] == "" {
-		return ulid.ULID{}, ulid.ULID{}, errors.New("invalid piano edit resource name: " + name)
+		return ulid.ULID{}, ulid.ULID{}, invalid("piano edit", name)
 	}
-	pianoID, err = ulid.Parse(segs[1])
+	pianoID, err = parseULID(segs[1])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
-	editID, err = ulid.Parse(segs[3])
+	editID, err = parseULID(segs[3])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
@@ -153,13 +169,13 @@ func ParsePianoPost(name string) (pianoID, postID ulid.ULID, err error) {
 		segs[0] != pianosCollection ||
 		segs[2] != postsCollection ||
 		segs[1] == "" || segs[3] == "" {
-		return ulid.ULID{}, ulid.ULID{}, errors.New("invalid piano post resource name: " + name)
+		return ulid.ULID{}, ulid.ULID{}, invalid("piano post", name)
 	}
-	pianoID, err = ulid.Parse(segs[1])
+	pianoID, err = parseULID(segs[1])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
-	postID, err = ulid.Parse(segs[3])
+	postID, err = parseULID(segs[3])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, err
 	}
@@ -182,17 +198,17 @@ func ParsePianoPostComment(name string) (pianoID, postID, commentID ulid.ULID, e
 		segs[2] != postsCollection ||
 		segs[4] != commentsCollection ||
 		segs[1] == "" || segs[3] == "" || segs[5] == "" {
-		return ulid.ULID{}, ulid.ULID{}, ulid.ULID{}, errors.New("invalid piano post comment resource name: " + name)
+		return ulid.ULID{}, ulid.ULID{}, ulid.ULID{}, invalid("piano post comment", name)
 	}
-	pianoID, err = ulid.Parse(segs[1])
+	pianoID, err = parseULID(segs[1])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, ulid.ULID{}, err
 	}
-	postID, err = ulid.Parse(segs[3])
+	postID, err = parseULID(segs[3])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, ulid.ULID{}, err
 	}
-	commentID, err = ulid.Parse(segs[5])
+	commentID, err = parseULID(segs[5])
 	if err != nil {
 		return ulid.ULID{}, ulid.ULID{}, ulid.ULID{}, err
 	}
@@ -214,9 +230,9 @@ func ParseNotification(name string) (userCustomID string, notificationID ulid.UL
 		segs[0] != usersCollection ||
 		segs[2] != notificationsCollection ||
 		segs[1] == "" || segs[3] == "" {
-		return "", ulid.ULID{}, errors.New("invalid notification resource name: " + name)
+		return "", ulid.ULID{}, invalid("notification", name)
 	}
-	notificationID, err = ulid.Parse(segs[3])
+	notificationID, err = parseULID(segs[3])
 	if err != nil {
 		return "", ulid.ULID{}, err
 	}
@@ -235,14 +251,14 @@ func ParseReport(name string) (ulid.ULID, error) {
 		return ulid.ULID{}, err
 	}
 	if len(segs) != 2 || segs[0] != reportsCollection || segs[1] == "" {
-		return ulid.ULID{}, errors.New("invalid report resource name: " + name)
+		return ulid.ULID{}, invalid("report", name)
 	}
-	return ulid.Parse(segs[1])
+	return parseULID(segs[1])
 }
 
 func split(name string) ([]string, error) {
 	if name == "" {
-		return nil, errors.New("empty resource name")
+		return nil, xerrors.ErrInvalidArgument.WithCause(errors.New("empty resource name"))
 	}
 	return strings.Split(name, "/"), nil
 }

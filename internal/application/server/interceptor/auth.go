@@ -9,6 +9,7 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/reverie-jp/piamap/internal/gen/pb/account/v1/accountv1connect"
+	"github.com/reverie-jp/piamap/internal/gen/pb/piano/v1/pianov1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/user/v1/userv1connect"
 	"github.com/reverie-jp/piamap/internal/platform/jwt"
 	"github.com/reverie-jp/piamap/internal/platform/ulid"
@@ -37,7 +38,9 @@ var publicProcedures = map[string]bool{
 
 // optionalAuthProcedures: 認証はオプショナル。ヘッダ無しは guest 通過、有れば検証必須。
 var optionalAuthProcedures = map[string]bool{
-	userv1connect.UserServiceGetUserProcedure: true,
+	userv1connect.UserServiceGetUserProcedure:       true,
+	pianov1connect.PianoServiceGetPianoProcedure:    true,
+	pianov1connect.PianoServiceSearchPianosProcedure: true,
 }
 
 type authInterceptor struct {

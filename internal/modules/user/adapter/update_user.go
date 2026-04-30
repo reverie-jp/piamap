@@ -28,6 +28,8 @@ func FromUpdateUserRequest(ctx context.Context, req *connect.Request[userv1.Upda
 		return usecase.UpdateUserInput{}, xerrors.ErrInvalidArgument.WithCause(errors.New("update_mask is required"))
 	}
 
+	// クライアントは FieldMask paths を camelCase で送るが、protojson は受信時に
+	// proto field name (snake_case) へ変換するため、switch は snake_case で行う。
 	for _, p := range mask.Paths {
 		switch p {
 		case "custom_id":

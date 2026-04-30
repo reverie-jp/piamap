@@ -4,6 +4,7 @@ sql:
     schema: "./migrations"
     queries:
       - "./internal/modules/account/sql"
+      - "./internal/modules/piano/sql"
       - "./internal/modules/user/sql"
     gen:
       go:

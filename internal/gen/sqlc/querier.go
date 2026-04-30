@@ -12,17 +12,27 @@ import (
 
 type Querier interface {
 	CreateAuthProvider(ctx context.Context, arg CreateAuthProviderParams) error
+	CreatePiano(ctx context.Context, arg CreatePianoParams) error
+	CreatePianoEdit(ctx context.Context, arg CreatePianoEditParams) error
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeleteExpiredRefreshTokensByUserID(ctx context.Context, userID ulid.ULID) error
 	DeleteRefreshTokenByHash(ctx context.Context, arg DeleteRefreshTokenByHashParams) error
 	DeleteUser(ctx context.Context, id ulid.ULID) error
 	GetAuthProviderByProvider(ctx context.Context, arg GetAuthProviderByProviderParams) (UserAuthProvider, error)
+	GetPianoByID(ctx context.Context, id ulid.ULID) (GetPianoByIDRow, error)
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetUserByCustomID(ctx context.Context, customID string) (User, error)
 	GetUserByID(ctx context.Context, id ulid.ULID) (User, error)
 	IsUserCurrentlyRestricted(ctx context.Context, userID ulid.ULID) (bool, error)
+	// 表示エリア内のアクティブなピアノを返す。GIST(location) の && で bbox 包含判定。
+	ListPianosInBBox(ctx context.Context, arg ListPianosInBBoxParams) ([]ListPianosInBBoxRow, error)
+	// 中心点から半径 radius_m 以内のアクティブなピアノを距離順に返す。
+	ListPianosNearby(ctx context.Context, arg ListPianosNearbyParams) ([]ListPianosNearbyRow, error)
 	ListUsersByIDs(ctx context.Context, ids []string) ([]User, error)
+	// COALESCE で「指定されたフィールドだけ更新」を実現。location は別 :exec で更新する (geography 関数のため)。
+	UpdatePiano(ctx context.Context, arg UpdatePianoParams) error
+	UpdatePianoLocation(ctx context.Context, arg UpdatePianoLocationParams) error
 	UpdateUserCustomID(ctx context.Context, arg UpdateUserCustomIDParams) error
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) error
 }

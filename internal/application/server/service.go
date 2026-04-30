@@ -10,9 +10,12 @@ import (
 	"github.com/reverie-jp/piamap/internal/application/transaction"
 	"github.com/reverie-jp/piamap/internal/config"
 	"github.com/reverie-jp/piamap/internal/gen/pb/account/v1/accountv1connect"
+	"github.com/reverie-jp/piamap/internal/gen/pb/piano/v1/pianov1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/user/v1/userv1connect"
 	"github.com/reverie-jp/piamap/internal/gen/sqlc"
 	"github.com/reverie-jp/piamap/internal/modules/account"
+	"github.com/reverie-jp/piamap/internal/modules/piano"
+	pianogw "github.com/reverie-jp/piamap/internal/modules/piano/gateway"
 	"github.com/reverie-jp/piamap/internal/modules/user"
 	usergw "github.com/reverie-jp/piamap/internal/modules/user/gateway"
 	"github.com/reverie-jp/piamap/internal/platform/google"
@@ -33,8 +36,11 @@ func initServices(cfg *config.Config, db *pgxpool.Pool, jwtManager *jwt.Manager)
 	authInterceptor := interceptor.AuthInterceptor(jwtManager)
 
 	userGateway := usergw.New(q)
+	pianoGateway := pianogw.New(q, userGateway)
+
 	accountService := account.InitModule(q, userGateway, tx, googleAuth, jwtManager)
 	userService := user.InitModule(userGateway)
+	pianoService := piano.InitModule(pianoGateway, userGateway, tx)
 
 	return []Service{
 		{
@@ -51,6 +57,15 @@ func initServices(cfg *config.Config, db *pgxpool.Pool, jwtManager *jwt.Manager)
 			RegisterConnectHandler: func(mux *http.ServeMux) {
 				mux.Handle(userv1connect.NewUserServiceHandler(
 					userService,
+					connect.WithInterceptors(errorInterceptor, authInterceptor),
+				))
+			},
+		},
+		{
+			Name: pianov1connect.PianoServiceName,
+			RegisterConnectHandler: func(mux *http.ServeMux) {
+				mux.Handle(pianov1connect.NewPianoServiceHandler(
+					pianoService,
 					connect.WithInterceptors(errorInterceptor, authInterceptor),
 				))
 			},

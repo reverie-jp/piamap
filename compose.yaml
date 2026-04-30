@@ -26,6 +26,18 @@ services:
     depends_on:
       - piamap-db
 
+  piamap-web:
+    container_name: piamap-web
+    image: node:24
+    working_dir: /piamap-web
+    volumes:
+      - ./web:/piamap-web:cached
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - piamap-api
+
   piamap-pgadmin:
     container_name: piamap-pgadmin
     image: dpage/pgadmin4:9.5
