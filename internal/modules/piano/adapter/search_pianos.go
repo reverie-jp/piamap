@@ -44,6 +44,33 @@ func FromSearchPianosRequest(ctx context.Context, req *connect.Request[pianov1.S
 		v := *req.Msg.MinRatingAverage
 		in.MinRatingAverage = &v
 	}
+	if req.Msg.Query != nil {
+		in.Query = *req.Msg.Query
+	}
+	if req.Msg.PianoBrand != nil {
+		v := *req.Msg.PianoBrand
+		in.PianoBrand = &v
+	}
+	if req.Msg.MinAmbientNoiseAverage != nil {
+		v := *req.Msg.MinAmbientNoiseAverage
+		in.MinAmbientNoiseAverage = &v
+	}
+	if req.Msg.MinFootTrafficAverage != nil {
+		v := *req.Msg.MinFootTrafficAverage
+		in.MinFootTrafficAverage = &v
+	}
+	if req.Msg.MinResonanceAverage != nil {
+		v := *req.Msg.MinResonanceAverage
+		in.MinResonanceAverage = &v
+	}
+	if req.Msg.MinKeyTouchWeightAverage != nil {
+		v := *req.Msg.MinKeyTouchWeightAverage
+		in.MinKeyTouchWeightAverage = &v
+	}
+	if req.Msg.MinTuningQualityAverage != nil {
+		v := *req.Msg.MinTuningQualityAverage
+		in.MinTuningQualityAverage = &v
+	}
 	return in, nil
 }
 

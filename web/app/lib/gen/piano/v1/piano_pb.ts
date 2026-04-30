@@ -662,6 +662,57 @@ export class SearchPianosRequest extends Message<SearchPianosRequest> {
    */
   minRatingAverage?: number;
 
+  /**
+   * テキスト検索 (ピアノ名 name に ILIKE 部分一致)。
+   * セット時は bounds / center は無視してグローバル検索。
+   *
+   * @generated from field: optional string query = 8;
+   */
+  query?: string;
+
+  /**
+   * メーカーフィルタ (piano_brand と ILIKE で大文字小文字無視の完全一致)。
+   *
+   * @generated from field: optional string piano_brand = 9;
+   */
+  pianoBrand?: string;
+
+  /**
+   * 5 環境属性の平均値の最低値 (1..5)。post_count が 0 の場合は除外される。
+   * 値の意味: 1=静か / 5=賑やか
+   *
+   * @generated from field: optional double min_ambient_noise_average = 10;
+   */
+  minAmbientNoiseAverage?: number;
+
+  /**
+   * 1=人通り少 / 5=人通り多
+   *
+   * @generated from field: optional double min_foot_traffic_average = 11;
+   */
+  minFootTrafficAverage?: number;
+
+  /**
+   * 1=響き弱い / 5=響き豊か
+   *
+   * @generated from field: optional double min_resonance_average = 12;
+   */
+  minResonanceAverage?: number;
+
+  /**
+   * 1=鍵盤軽い / 5=鍵盤重い
+   *
+   * @generated from field: optional double min_key_touch_weight_average = 13;
+   */
+  minKeyTouchWeightAverage?: number;
+
+  /**
+   * 1=調律悪い / 5=調律良い
+   *
+   * @generated from field: optional double min_tuning_quality_average = 14;
+   */
+  minTuningQualityAverage?: number;
+
   constructor(data?: PartialMessage<SearchPianosRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -677,6 +728,13 @@ export class SearchPianosRequest extends Message<SearchPianosRequest> {
     { no: 5, name: "kind", kind: "enum", T: proto3.getEnumType(PianoKind), opt: true },
     { no: 6, name: "piano_type", kind: "enum", T: proto3.getEnumType(PianoType), opt: true },
     { no: 7, name: "min_rating_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 8, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 9, name: "piano_brand", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 10, name: "min_ambient_noise_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 11, name: "min_foot_traffic_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 12, name: "min_resonance_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 13, name: "min_key_touch_weight_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 14, name: "min_tuning_quality_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SearchPianosRequest {

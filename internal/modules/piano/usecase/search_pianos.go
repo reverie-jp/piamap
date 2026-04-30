@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"strings"
 
 	"github.com/reverie-jp/piamap/internal/domain/entity"
 	"github.com/reverie-jp/piamap/internal/modules/piano/gateway"
@@ -24,8 +25,29 @@ func (uc *SearchPianos) Execute(ctx context.Context, input SearchPianosInput) (*
 		limit = SearchPianosDefaultLimit
 	}
 
+	attrs := gateway.AttributeFilters{
+		MinAmbientNoiseAverage:   input.MinAmbientNoiseAverage,
+		MinFootTrafficAverage:    input.MinFootTrafficAverage,
+		MinResonanceAverage:      input.MinResonanceAverage,
+		MinKeyTouchWeightAverage: input.MinKeyTouchWeightAverage,
+		MinTuningQualityAverage:  input.MinTuningQualityAverage,
+	}
 	var pianos []*entity.Piano
-	if input.HasBounds {
+	if q := strings.TrimSpace(input.Query); q != "" {
+		ps, err := uc.pianoGateway.SearchByText(ctx, gateway.SearchByTextParams{
+			Query:            "%" + escapeLike(q) + "%",
+			Kind:             input.Kind,
+			PianoType:        input.PianoType,
+			PianoBrand:       input.PianoBrand,
+			MinRatingAverage: input.MinRatingAverage,
+			Attributes:       attrs,
+			Limit:            limit,
+		})
+		if err != nil {
+			return nil, err
+		}
+		pianos = ps
+	} else if input.HasBounds {
 		ps, err := uc.pianoGateway.SearchInBBox(ctx, gateway.SearchInBBoxParams{
 			MinLat:           input.MinLat,
 			MinLng:           input.MinLng,
@@ -33,7 +55,9 @@ func (uc *SearchPianos) Execute(ctx context.Context, input SearchPianosInput) (*
 			MaxLng:           input.MaxLng,
 			Kind:             input.Kind,
 			PianoType:        input.PianoType,
+			PianoBrand:       input.PianoBrand,
 			MinRatingAverage: input.MinRatingAverage,
+			Attributes:       attrs,
 			Limit:            limit,
 		})
 		if err != nil {
@@ -47,7 +71,9 @@ func (uc *SearchPianos) Execute(ctx context.Context, input SearchPianosInput) (*
 			RadiusM:          input.RadiusM,
 			Kind:             input.Kind,
 			PianoType:        input.PianoType,
+			PianoBrand:       input.PianoBrand,
 			MinRatingAverage: input.MinRatingAverage,
+			Attributes:       attrs,
 			Limit:            limit,
 		})
 		if err != nil {
@@ -61,4 +87,10 @@ func (uc *SearchPianos) Execute(ctx context.Context, input SearchPianosInput) (*
 		return nil, err
 	}
 	return &SearchPianosOutput{Views: views}, nil
+}
+
+// escapeLike は ILIKE のメタ文字 (% _ \) を無効化する。
+func escapeLike(s string) string {
+	r := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
+	return r.Replace(s)
 }

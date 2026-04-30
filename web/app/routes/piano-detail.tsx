@@ -214,9 +214,14 @@ export default function PianoDetail() {
   return (
     <MobileShell>
       <header className="flex items-center gap-2 pb-3">
-        <Link to="/map" aria-label="戻る" className="text-slate-500 hover:text-slate-700">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="戻る"
+          className="cursor-pointer text-slate-500 hover:text-slate-700"
+        >
           <ArrowLeft size={22} />
-        </Link>
+        </button>
         <h1 className="flex-1 truncate text-base font-bold text-slate-900">
           {piano?.displayName ?? "読み込み中..."}
         </h1>

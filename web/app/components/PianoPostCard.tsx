@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Heart, Pencil, Star, Trash2 } from "lucide-react";
+import { Heart, MessageSquare, Pencil, Star, Trash2 } from "lucide-react";
 
 import { pianoPostLikeClient } from "../lib/api-client";
 import {
@@ -8,6 +8,7 @@ import {
   UnlikePianoPostRequest,
 } from "../lib/gen/piano_post_like/v1/piano_post_like_pb";
 import type { PianoPost } from "../lib/gen/piano_post/v1/piano_post_pb";
+import { parsePianoPost } from "../lib/resource-name";
 
 type Props = {
   post: PianoPost;
@@ -19,6 +20,8 @@ type Props = {
   canLike?: boolean;
   /** 未ログイン時に ❤️ を押したときに親へ通知 (SignUpPromptModal を出す用)。 */
   onLikeUnauthorized?: () => void;
+  /** 投稿詳細ページ自身でレンダリングする時は true。コメントボタンを Link でなくただの表示にする。 */
+  hideCommentLink?: boolean;
   onEdit?: (post: PianoPost) => void;
   onDelete?: (post: PianoPost) => void;
 };
@@ -29,6 +32,7 @@ export function PianoPostCard({
   currentUserCustomId,
   canLike,
   onLikeUnauthorized,
+  hideCommentLink,
   onEdit,
   onDelete,
 }: Props) {
@@ -37,8 +41,18 @@ export function PianoPostCard({
     ? `${visitedAt.getFullYear()}/${visitedAt.getMonth() + 1}/${visitedAt.getDate()}`
     : "";
   const authorCustomId = post.author?.split("/").pop() ?? "";
-  const pianoId = post.pianoName?.split("/")[1];
   const isAuthor = Boolean(currentUserCustomId) && currentUserCustomId === authorCustomId;
+  let pianoIdParsed = "";
+  let postIdParsed = "";
+  try {
+    const r = parsePianoPost(post.name);
+    pianoIdParsed = r.pianoId;
+    postIdParsed = r.postId;
+  } catch {
+    /* noop */
+  }
+  const detailPath =
+    pianoIdParsed && postIdParsed ? `/pianos/${pianoIdParsed}/posts/${postIdParsed}` : "";
 
   // 楽観的更新でローカル state を持つ。
   const [liked, setLiked] = useState(post.viewerLiked);
@@ -95,12 +109,12 @@ export function PianoPostCard({
           <span className="font-bold">{post.rating}</span>
         </div>
       </header>
-      {showPiano && pianoId ? (
+      {showPiano && pianoIdParsed ? (
         <Link
-          to={`/pianos/${pianoId}`}
+          to={`/pianos/${pianoIdParsed}`}
           className="mt-2 block text-sm font-medium text-amber-700 hover:underline"
         >
-          {post.pianoDisplayName || pianoId}
+          {post.pianoDisplayName || pianoIdParsed}
         </Link>
       ) : null}
       {post.body ? (
@@ -108,26 +122,28 @@ export function PianoPostCard({
       ) : null}
       <PostAttributes post={post} />
       <div className="mt-2 flex items-center justify-between">
-        <button
-          type="button"
-          aria-label={liked ? "いいねを解除" : "いいね"}
-          aria-pressed={liked}
-          onClick={toggleLike}
-          disabled={busy}
-          className={
-            "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs outline-none transition focus-visible:ring-2 focus-visible:ring-rose-500 disabled:cursor-progress " +
-            (liked
-              ? "text-rose-600 hover:bg-rose-50"
-              : "text-slate-500 hover:bg-slate-100 hover:text-slate-700") +
-            (canLike ? " cursor-pointer" : " cursor-pointer")
-          }
-        >
-          <Heart
-            size={14}
-            className={liked ? "fill-rose-500 text-rose-500" : ""}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-label={liked ? "いいねを解除" : "いいね"}
+            aria-pressed={liked}
+            onClick={toggleLike}
+            disabled={busy}
+            className={
+              "inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-xs outline-none transition focus-visible:ring-2 focus-visible:ring-rose-500 disabled:cursor-progress " +
+              (liked
+                ? "text-rose-600 hover:bg-rose-50"
+                : "text-slate-500 hover:bg-slate-100 hover:text-slate-700")
+            }
+          >
+            <Heart size={14} className={liked ? "fill-rose-500 text-rose-500" : ""} />
+            {likeCount > 0 ? <span className="font-semibold">{likeCount}</span> : null}
+          </button>
+          <CommentLink
+            count={post.commentCount}
+            to={hideCommentLink ? "" : detailPath}
           />
-          {likeCount > 0 ? <span className="font-semibold">{likeCount}</span> : null}
-        </button>
+        </div>
         {isAuthor && (onEdit || onDelete) ? (
           <div className="flex gap-1">
             {onEdit ? (
@@ -154,6 +170,25 @@ export function PianoPostCard({
         ) : null}
       </div>
     </article>
+  );
+}
+
+function CommentLink({ count, to }: { count: number; to: string }) {
+  const cls =
+    "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs outline-none transition text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-amber-500";
+  if (!to) {
+    return (
+      <span className={cls}>
+        <MessageSquare size={14} />
+        {count > 0 ? <span className="font-semibold">{count}</span> : null}
+      </span>
+    );
+  }
+  return (
+    <Link to={to} className={`${cls} cursor-pointer`} aria-label="コメントを見る">
+      <MessageSquare size={14} />
+      {count > 0 ? <span className="font-semibold">{count}</span> : null}
+    </Link>
   );
 }
 

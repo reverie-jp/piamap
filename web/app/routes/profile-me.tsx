@@ -9,6 +9,7 @@ import { LikedPianoPostList } from "../components/LikedPianoPostList";
 import { PianoPostCard } from "../components/PianoPostCard";
 import { SignUpPromptModal } from "../components/SignUpPromptModal";
 import { Tabs } from "../components/Tabs";
+import { UserCommentList } from "../components/UserCommentList";
 import { UserPianoList } from "../components/UserPianoList";
 import { PianoListKind } from "../lib/gen/piano_user_list/v1/piano_user_list_pb";
 import { pianoPostClient, userClient } from "../lib/api-client";
@@ -27,7 +28,7 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: "プロフィール — PiaMap" }];
 }
 
-type ProfileTab = "posts" | "wishlist" | "visited" | "favorite" | "liked";
+type ProfileTab = "posts" | "wishlist" | "visited" | "favorite" | "liked" | "comments";
 
 export default function ProfileMe() {
   const { authed } = useAuth();
@@ -133,6 +134,7 @@ export default function ProfileMe() {
               tabs={[
                 { id: "posts", label: "投稿" },
                 { id: "liked", label: "いいね" },
+                { id: "comments", label: "コメント" },
                 { id: "wishlist", label: "行ってみたい" },
                 { id: "visited", label: "行ったことある" },
                 { id: "favorite", label: "お気に入り" },
@@ -158,12 +160,15 @@ export default function ProfileMe() {
                           onEdit={(post) => setEditingPost(post)}
                           onDelete={(post) => setDeletingPost(post)}
                         />
+                        {/* 自身のページなのでCommentUnauthorizedは不要 (常にauthed) */}
                       </li>
                     ))}
                   </ul>
                 )
               ) : tab === "liked" ? (
-                <LikedPianoPostList customId={me.customId} />
+                <LikedPianoPostList customId={me.customId} currentUserCustomId={me.customId} />
+              ) : tab === "comments" ? (
+                <UserCommentList customId={me.customId} />
               ) : tab === "wishlist" ? (
                 <UserPianoList
                   customId={me.customId}

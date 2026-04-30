@@ -11,6 +11,7 @@ import (
 	"github.com/reverie-jp/piamap/internal/gen/pb/account/v1/accountv1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/piano/v1/pianov1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/piano_post/v1/piano_postv1connect"
+	"github.com/reverie-jp/piamap/internal/gen/pb/piano_post_comment/v1/piano_post_commentv1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/piano_post_like/v1/piano_post_likev1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/piano_user_list/v1/piano_user_listv1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/user/v1/userv1connect"
@@ -49,6 +50,7 @@ var optionalAuthProcedures = map[string]bool{
 	piano_postv1connect.PianoPostServiceListPianoPostsProcedure:                  true,
 	piano_user_listv1connect.PianoUserListServiceListUserListPianosProcedure:     true,
 	piano_post_likev1connect.PianoPostLikeServiceListLikedPianoPostsProcedure:    true,
+	piano_post_commentv1connect.PianoPostCommentServiceListPianoPostCommentsProcedure: true,
 }
 
 type authInterceptor struct {

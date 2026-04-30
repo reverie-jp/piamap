@@ -290,23 +290,50 @@ WHERE status = 'active'
   )::geography
   AND ($5::piano_kind IS NULL OR kind = $5::piano_kind)
   AND ($6::piano_type IS NULL OR piano_type = $6::piano_type)
+  AND ($7::text IS NULL OR piano_brand ILIKE $7::text)
   AND (
-      $7::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= $7::float8)
+      $8::float8 IS NULL
+      OR (post_count > 0 AND rating_sum::float8 / post_count >= $8::float8)
+  )
+  AND (
+      $9::float8 IS NULL
+      OR (ambient_noise_count > 0 AND ambient_noise_sum::float8 / ambient_noise_count >= $9::float8)
+  )
+  AND (
+      $10::float8 IS NULL
+      OR (foot_traffic_count > 0 AND foot_traffic_sum::float8 / foot_traffic_count >= $10::float8)
+  )
+  AND (
+      $11::float8 IS NULL
+      OR (resonance_count > 0 AND resonance_sum::float8 / resonance_count >= $11::float8)
+  )
+  AND (
+      $12::float8 IS NULL
+      OR (key_touch_weight_count > 0 AND key_touch_weight_sum::float8 / key_touch_weight_count >= $12::float8)
+  )
+  AND (
+      $13::float8 IS NULL
+      OR (tuning_quality_count > 0 AND tuning_quality_sum::float8 / tuning_quality_count >= $13::float8)
   )
 ORDER BY post_count DESC, id
-LIMIT $8::int
+LIMIT $14::int
 `
 
 type ListPianosInBBoxParams struct {
-	MinLng           float64       `json:"min_lng"`
-	MinLat           float64       `json:"min_lat"`
-	MaxLng           float64       `json:"max_lng"`
-	MaxLat           float64       `json:"max_lat"`
-	Kind             NullPianoKind `json:"kind"`
-	PianoType        NullPianoType `json:"piano_type"`
-	MinRatingAverage *float64      `json:"min_rating_average"`
-	LimitCount       int32         `json:"limit_count"`
+	MinLng                   float64       `json:"min_lng"`
+	MinLat                   float64       `json:"min_lat"`
+	MaxLng                   float64       `json:"max_lng"`
+	MaxLat                   float64       `json:"max_lat"`
+	Kind                     NullPianoKind `json:"kind"`
+	PianoType                NullPianoType `json:"piano_type"`
+	PianoBrand               *string       `json:"piano_brand"`
+	MinRatingAverage         *float64      `json:"min_rating_average"`
+	MinAmbientNoiseAverage   *float64      `json:"min_ambient_noise_average"`
+	MinFootTrafficAverage    *float64      `json:"min_foot_traffic_average"`
+	MinResonanceAverage      *float64      `json:"min_resonance_average"`
+	MinKeyTouchWeightAverage *float64      `json:"min_key_touch_weight_average"`
+	MinTuningQualityAverage  *float64      `json:"min_tuning_quality_average"`
+	LimitCount               int32         `json:"limit_count"`
 }
 
 type ListPianosInBBoxRow struct {
@@ -360,7 +387,13 @@ func (q *Queries) ListPianosInBBox(ctx context.Context, arg ListPianosInBBoxPara
 		arg.MaxLat,
 		arg.Kind,
 		arg.PianoType,
+		arg.PianoBrand,
 		arg.MinRatingAverage,
+		arg.MinAmbientNoiseAverage,
+		arg.MinFootTrafficAverage,
+		arg.MinResonanceAverage,
+		arg.MinKeyTouchWeightAverage,
+		arg.MinTuningQualityAverage,
 		arg.LimitCount,
 	)
 	if err != nil {
@@ -480,22 +513,49 @@ WHERE status = 'active'
   )
   AND ($4::piano_kind IS NULL OR kind = $4::piano_kind)
   AND ($5::piano_type IS NULL OR piano_type = $5::piano_type)
+  AND ($6::text IS NULL OR piano_brand ILIKE $6::text)
   AND (
-      $6::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= $6::float8)
+      $7::float8 IS NULL
+      OR (post_count > 0 AND rating_sum::float8 / post_count >= $7::float8)
+  )
+  AND (
+      $8::float8 IS NULL
+      OR (ambient_noise_count > 0 AND ambient_noise_sum::float8 / ambient_noise_count >= $8::float8)
+  )
+  AND (
+      $9::float8 IS NULL
+      OR (foot_traffic_count > 0 AND foot_traffic_sum::float8 / foot_traffic_count >= $9::float8)
+  )
+  AND (
+      $10::float8 IS NULL
+      OR (resonance_count > 0 AND resonance_sum::float8 / resonance_count >= $10::float8)
+  )
+  AND (
+      $11::float8 IS NULL
+      OR (key_touch_weight_count > 0 AND key_touch_weight_sum::float8 / key_touch_weight_count >= $11::float8)
+  )
+  AND (
+      $12::float8 IS NULL
+      OR (tuning_quality_count > 0 AND tuning_quality_sum::float8 / tuning_quality_count >= $12::float8)
   )
 ORDER BY distance_m ASC
-LIMIT $7::int
+LIMIT $13::int
 `
 
 type ListPianosNearbyParams struct {
-	CenterLng        float64       `json:"center_lng"`
-	CenterLat        float64       `json:"center_lat"`
-	RadiusM          float64       `json:"radius_m"`
-	Kind             NullPianoKind `json:"kind"`
-	PianoType        NullPianoType `json:"piano_type"`
-	MinRatingAverage *float64      `json:"min_rating_average"`
-	LimitCount       int32         `json:"limit_count"`
+	CenterLng                float64       `json:"center_lng"`
+	CenterLat                float64       `json:"center_lat"`
+	RadiusM                  float64       `json:"radius_m"`
+	Kind                     NullPianoKind `json:"kind"`
+	PianoType                NullPianoType `json:"piano_type"`
+	PianoBrand               *string       `json:"piano_brand"`
+	MinRatingAverage         *float64      `json:"min_rating_average"`
+	MinAmbientNoiseAverage   *float64      `json:"min_ambient_noise_average"`
+	MinFootTrafficAverage    *float64      `json:"min_foot_traffic_average"`
+	MinResonanceAverage      *float64      `json:"min_resonance_average"`
+	MinKeyTouchWeightAverage *float64      `json:"min_key_touch_weight_average"`
+	MinTuningQualityAverage  *float64      `json:"min_tuning_quality_average"`
+	LimitCount               int32         `json:"limit_count"`
 }
 
 type ListPianosNearbyRow struct {
@@ -548,7 +608,13 @@ func (q *Queries) ListPianosNearby(ctx context.Context, arg ListPianosNearbyPara
 		arg.RadiusM,
 		arg.Kind,
 		arg.PianoType,
+		arg.PianoBrand,
 		arg.MinRatingAverage,
+		arg.MinAmbientNoiseAverage,
+		arg.MinFootTrafficAverage,
+		arg.MinResonanceAverage,
+		arg.MinKeyTouchWeightAverage,
+		arg.MinTuningQualityAverage,
 		arg.LimitCount,
 	)
 	if err != nil {
@@ -558,6 +624,211 @@ func (q *Queries) ListPianosNearby(ctx context.Context, arg ListPianosNearbyPara
 	items := []ListPianosNearbyRow{}
 	for rows.Next() {
 		var i ListPianosNearbyRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Latitude,
+			&i.Longitude,
+			&i.Address,
+			&i.Prefecture,
+			&i.City,
+			&i.Kind,
+			&i.VenueType,
+			&i.PianoType,
+			&i.PianoBrand,
+			&i.PianoModel,
+			&i.ManufactureYear,
+			&i.Hours,
+			&i.Status,
+			&i.Availability,
+			&i.AvailabilityNote,
+			&i.InstallTime,
+			&i.RemoveTime,
+			&i.CreatorUserID,
+			&i.PostCount,
+			&i.RatingSum,
+			&i.AmbientNoiseCount,
+			&i.AmbientNoiseSum,
+			&i.FootTrafficCount,
+			&i.FootTrafficSum,
+			&i.ResonanceCount,
+			&i.ResonanceSum,
+			&i.KeyTouchWeightCount,
+			&i.KeyTouchWeightSum,
+			&i.TuningQualityCount,
+			&i.TuningQualitySum,
+			&i.WishlistCount,
+			&i.VisitedCount,
+			&i.FavoriteCount,
+			&i.CreateTime,
+			&i.UpdateTime,
+			&i.DistanceM,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchPianosByText = `-- name: SearchPianosByText :many
+SELECT
+    id,
+    name,
+    description,
+    ST_Y(location::geometry)::float8 AS latitude,
+    ST_X(location::geometry)::float8 AS longitude,
+    address,
+    prefecture,
+    city,
+    kind,
+    venue_type,
+    piano_type,
+    piano_brand,
+    piano_model,
+    manufacture_year,
+    hours,
+    status,
+    availability,
+    availability_note,
+    install_time,
+    remove_time,
+    creator_user_id,
+    post_count,
+    rating_sum,
+    ambient_noise_count,
+    ambient_noise_sum,
+    foot_traffic_count,
+    foot_traffic_sum,
+    resonance_count,
+    resonance_sum,
+    key_touch_weight_count,
+    key_touch_weight_sum,
+    tuning_quality_count,
+    tuning_quality_sum,
+    wishlist_count,
+    visited_count,
+    favorite_count,
+    create_time,
+    update_time,
+    0::float8 AS distance_m
+FROM pianos
+WHERE status = 'active'
+  AND name ILIKE $1::text
+  AND ($2::piano_kind IS NULL OR kind = $2::piano_kind)
+  AND ($3::piano_type IS NULL OR piano_type = $3::piano_type)
+  AND ($4::text IS NULL OR piano_brand ILIKE $4::text)
+  AND (
+      $5::float8 IS NULL
+      OR (post_count > 0 AND rating_sum::float8 / post_count >= $5::float8)
+  )
+  AND (
+      $6::float8 IS NULL
+      OR (ambient_noise_count > 0 AND ambient_noise_sum::float8 / ambient_noise_count >= $6::float8)
+  )
+  AND (
+      $7::float8 IS NULL
+      OR (foot_traffic_count > 0 AND foot_traffic_sum::float8 / foot_traffic_count >= $7::float8)
+  )
+  AND (
+      $8::float8 IS NULL
+      OR (resonance_count > 0 AND resonance_sum::float8 / resonance_count >= $8::float8)
+  )
+  AND (
+      $9::float8 IS NULL
+      OR (key_touch_weight_count > 0 AND key_touch_weight_sum::float8 / key_touch_weight_count >= $9::float8)
+  )
+  AND (
+      $10::float8 IS NULL
+      OR (tuning_quality_count > 0 AND tuning_quality_sum::float8 / tuning_quality_count >= $10::float8)
+  )
+ORDER BY post_count DESC, id
+LIMIT $11::int
+`
+
+type SearchPianosByTextParams struct {
+	QueryPattern             string        `json:"query_pattern"`
+	Kind                     NullPianoKind `json:"kind"`
+	PianoType                NullPianoType `json:"piano_type"`
+	PianoBrand               *string       `json:"piano_brand"`
+	MinRatingAverage         *float64      `json:"min_rating_average"`
+	MinAmbientNoiseAverage   *float64      `json:"min_ambient_noise_average"`
+	MinFootTrafficAverage    *float64      `json:"min_foot_traffic_average"`
+	MinResonanceAverage      *float64      `json:"min_resonance_average"`
+	MinKeyTouchWeightAverage *float64      `json:"min_key_touch_weight_average"`
+	MinTuningQualityAverage  *float64      `json:"min_tuning_quality_average"`
+	LimitCount               int32         `json:"limit_count"`
+}
+
+type SearchPianosByTextRow struct {
+	ID                  ulid.ULID         `json:"id"`
+	Name                string            `json:"name"`
+	Description         *string           `json:"description"`
+	Latitude            float64           `json:"latitude"`
+	Longitude           float64           `json:"longitude"`
+	Address             *string           `json:"address"`
+	Prefecture          *string           `json:"prefecture"`
+	City                *string           `json:"city"`
+	Kind                PianoKind         `json:"kind"`
+	VenueType           *string           `json:"venue_type"`
+	PianoType           PianoType         `json:"piano_type"`
+	PianoBrand          string            `json:"piano_brand"`
+	PianoModel          *string           `json:"piano_model"`
+	ManufactureYear     *int16            `json:"manufacture_year"`
+	Hours               *string           `json:"hours"`
+	Status              PianoStatus       `json:"status"`
+	Availability        PianoAvailability `json:"availability"`
+	AvailabilityNote    *string           `json:"availability_note"`
+	InstallTime         *time.Time        `json:"install_time"`
+	RemoveTime          *time.Time        `json:"remove_time"`
+	CreatorUserID       *ulid.ULID        `json:"creator_user_id"`
+	PostCount           int32             `json:"post_count"`
+	RatingSum           int32             `json:"rating_sum"`
+	AmbientNoiseCount   int32             `json:"ambient_noise_count"`
+	AmbientNoiseSum     int32             `json:"ambient_noise_sum"`
+	FootTrafficCount    int32             `json:"foot_traffic_count"`
+	FootTrafficSum      int32             `json:"foot_traffic_sum"`
+	ResonanceCount      int32             `json:"resonance_count"`
+	ResonanceSum        int32             `json:"resonance_sum"`
+	KeyTouchWeightCount int32             `json:"key_touch_weight_count"`
+	KeyTouchWeightSum   int32             `json:"key_touch_weight_sum"`
+	TuningQualityCount  int32             `json:"tuning_quality_count"`
+	TuningQualitySum    int32             `json:"tuning_quality_sum"`
+	WishlistCount       int32             `json:"wishlist_count"`
+	VisitedCount        int32             `json:"visited_count"`
+	FavoriteCount       int32             `json:"favorite_count"`
+	CreateTime          time.Time         `json:"create_time"`
+	UpdateTime          time.Time         `json:"update_time"`
+	DistanceM           float64           `json:"distance_m"`
+}
+
+// ピアノ名 (name) に対する部分一致検索 (グローバル)。
+// bounds なしで使う想定。MVP は ILIKE で十分 (件数が少ない、PG_TRGM 等は将来)。
+func (q *Queries) SearchPianosByText(ctx context.Context, arg SearchPianosByTextParams) ([]SearchPianosByTextRow, error) {
+	rows, err := q.db.Query(ctx, searchPianosByText,
+		arg.QueryPattern,
+		arg.Kind,
+		arg.PianoType,
+		arg.PianoBrand,
+		arg.MinRatingAverage,
+		arg.MinAmbientNoiseAverage,
+		arg.MinFootTrafficAverage,
+		arg.MinResonanceAverage,
+		arg.MinKeyTouchWeightAverage,
+		arg.MinTuningQualityAverage,
+		arg.LimitCount,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SearchPianosByTextRow{}
+	for rows.Next() {
+		var i SearchPianosByTextRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

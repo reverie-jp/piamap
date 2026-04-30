@@ -9,11 +9,17 @@ import { PianoPostCard } from "./PianoPostCard";
 
 type Props = {
   customId: string;
+  currentUserCustomId?: string;
   onLikeUnauthorized?: () => void;
   emptyMessage?: string;
 };
 
-export function LikedPianoPostList({ customId, onLikeUnauthorized, emptyMessage }: Props) {
+export function LikedPianoPostList({
+  customId,
+  currentUserCustomId,
+  onLikeUnauthorized,
+  emptyMessage,
+}: Props) {
   const { authed } = useAuth();
   const [posts, setPosts] = useState<PianoPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +58,7 @@ export function LikedPianoPostList({ customId, onLikeUnauthorized, emptyMessage 
           <PianoPostCard
             post={p}
             showPiano
+            currentUserCustomId={currentUserCustomId}
             canLike={authed}
             onLikeUnauthorized={onLikeUnauthorized}
           />

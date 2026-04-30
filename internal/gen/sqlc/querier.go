@@ -19,6 +19,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeleteExpiredRefreshTokensByUserID(ctx context.Context, userID ulid.ULID) error
 	DeletePianoPost(ctx context.Context, id ulid.ULID) error
+	DeletePianoPostComment(ctx context.Context, id ulid.ULID) error
 	DeletePianoPostLike(ctx context.Context, arg DeletePianoPostLikeParams) error
 	DeletePianoUserList(ctx context.Context, arg DeletePianoUserListParams) error
 	DeleteRefreshTokenByHash(ctx context.Context, arg DeleteRefreshTokenByHashParams) error
@@ -26,9 +27,11 @@ type Querier interface {
 	GetAuthProviderByProvider(ctx context.Context, arg GetAuthProviderByProviderParams) (UserAuthProvider, error)
 	GetPianoByID(ctx context.Context, id ulid.ULID) (GetPianoByIDRow, error)
 	GetPianoPostByID(ctx context.Context, id ulid.ULID) (GetPianoPostByIDRow, error)
+	GetPianoPostComment(ctx context.Context, id ulid.ULID) (PianoPostComment, error)
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetUserByCustomID(ctx context.Context, customID string) (User, error)
 	GetUserByID(ctx context.Context, id ulid.ULID) (User, error)
+	InsertPianoPostComment(ctx context.Context, arg InsertPianoPostCommentParams) error
 	IsUserCurrentlyRestricted(ctx context.Context, userID ulid.ULID) (bool, error)
 	// 指定ユーザーがいいねした投稿の ID 一覧 (新しい順)。
 	// create_time keyset。MVP は piano_post_id (ULID) を keyset 兼テキスト cursor として使う。
@@ -40,6 +43,10 @@ type Querier interface {
 	ListMyListKindsForPiano(ctx context.Context, arg ListMyListKindsForPianoParams) ([]PianoListKind, error)
 	// 指定ピアノの編集ログを新しい順に。AIP-158: id keyset で次ページ。
 	ListPianoEditsByPiano(ctx context.Context, arg ListPianoEditsByPianoParams) ([]PianoEdit, error)
+	// 投稿に対するコメント一覧 (古い順)。MVP は ID (ULID) を keyset として使う。
+	ListPianoPostCommentsByPost(ctx context.Context, arg ListPianoPostCommentsByPostParams) ([]PianoPostComment, error)
+	// 指定ユーザーが書いたコメント一覧 (新しい順)。
+	ListPianoPostCommentsByUser(ctx context.Context, arg ListPianoPostCommentsByUserParams) ([]PianoPostComment, error)
 	// 指定ピアノの投稿。public のみ (本人投稿は別途 user 経由で見る運用)。
 	// AIP-158: page_token は最後の (create_time, id) を opaque に。MVP は id (ULID) を keyset に使う。
 	ListPianoPostsByPiano(ctx context.Context, arg ListPianoPostsByPianoParams) ([]ListPianoPostsByPianoRow, error)
@@ -55,6 +62,9 @@ type Querier interface {
 	// グローバルなタイムライン用。最新の public 投稿。
 	ListPublicPianoPosts(ctx context.Context, arg ListPublicPianoPostsParams) ([]ListPublicPianoPostsRow, error)
 	ListUsersByIDs(ctx context.Context, ids []string) ([]User, error)
+	// ピアノ名 (name) に対する部分一致検索 (グローバル)。
+	// bounds なしで使う想定。MVP は ILIKE で十分 (件数が少ない、PG_TRGM 等は将来)。
+	SearchPianosByText(ctx context.Context, arg SearchPianosByTextParams) ([]SearchPianosByTextRow, error)
 	// set_X が true のフィールドだけ更新する (NULL 化も含めて値そのまま反映)。
 	// false のフィールドは既存値を保持。NOT NULL カラム (name / kind / piano_type / piano_brand /
 	// status / availability) は usecase 層で set_X=true のとき値存在を保証する。

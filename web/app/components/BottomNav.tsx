@@ -19,7 +19,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="メインナビゲーション"
-      className="fixed bottom-0 left-1/2 z-30 w-full max-w-[390px] -translate-x-1/2 border-t border-slate-200 bg-white/95 backdrop-blur"
+      className="fixed bottom-0 left-1/2 z-30 w-full max-w-97.5 -translate-x-1/2 border-t border-slate-200 bg-white/95 backdrop-blur"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
     >
       <ul className="grid h-16 grid-cols-4">

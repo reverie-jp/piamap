@@ -14,6 +14,7 @@ export default [
 
   // ボトムナビ無し、プッシュ遷移のページ。
   route("pianos/:id", "routes/piano-detail.tsx"),
+  route("pianos/:id/posts/:postId", "routes/piano-post-detail.tsx"),
   route("profile/:customId", "routes/profile-other.tsx"),
   route("settings", "routes/settings.tsx"),
 ] satisfies RouteConfig;

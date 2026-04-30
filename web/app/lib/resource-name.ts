@@ -42,3 +42,25 @@ export function parsePianoPost(name: string): { pianoId: string; postId: string 
   }
   return { pianoId: parts[1], postId: parts[3] };
 }
+
+export function formatPianoPostComment(pianoId: string, postId: string, commentId: string): string {
+  return `pianos/${pianoId}/posts/${postId}/comments/${commentId}`;
+}
+
+export function parsePianoPostComment(
+  name: string,
+): { pianoId: string; postId: string; commentId: string } {
+  const parts = name.split("/");
+  if (
+    parts.length !== 6 ||
+    parts[0] !== "pianos" ||
+    parts[2] !== "posts" ||
+    parts[4] !== "comments" ||
+    !parts[1] ||
+    !parts[3] ||
+    !parts[5]
+  ) {
+    throw new Error(`invalid piano post comment resource name: ${name}`);
+  }
+  return { pianoId: parts[1], postId: parts[3], commentId: parts[5] };
+}

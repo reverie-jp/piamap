@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package piano_post_comment.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service PianoPostCommentService {
+  // 投稿にコメント (認証必須)。
+  rpc CreatePianoPostComment(CreatePianoPostCommentRequest) returns (CreatePianoPostCommentResponse) {}
+
+  // コメント一覧:
+  //   parent = "pianos/{piano_id}/posts/{post_id}" — その投稿のコメント一覧
+  //   parent = "users/{custom_id}"                  — そのユーザーのコメント一覧 (本人含む)
+  rpc ListPianoPostComments(ListPianoPostCommentsRequest) returns (ListPianoPostCommentsResponse) {}
+
+  // コメント削除 (本人のみ)。
+  rpc DeletePianoPostComment(DeletePianoPostCommentRequest) returns (DeletePianoPostCommentResponse) {}
+}
+
+// AIP-122: name = "pianos/{piano_id}/posts/{post_id}/comments/{comment_id}"
+message PianoPostComment {
+  string name = 1;
+  // 投稿者 ("users/{custom_id}")。
+  string author = 2;
+  // 親コメント (返信時のみ)。"pianos/.../comments/{parent_comment_id}"
+  optional string parent_comment = 3;
+  string body = 4;
+  google.protobuf.Timestamp create_time = 5;
+  google.protobuf.Timestamp update_time = 6;
+
+  // 展開フィールド (N+1 を避けるため Server で hydrate)。
+  string author_display_name = 7;
+  optional string author_avatar_url = 8;
+}
+
+message CreatePianoPostCommentRequest {
+  // "pianos/{piano_id}/posts/{post_id}"
+  string parent = 1;
+  PianoPostComment piano_post_comment = 2;
+}
+
+message CreatePianoPostCommentResponse {
+  PianoPostComment piano_post_comment = 1;
+}
+
+message ListPianoPostCommentsRequest {
+  // "pianos/{piano_id}/posts/{post_id}" / "users/{custom_id}"
+  string parent = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+
+message ListPianoPostCommentsResponse {
+  repeated PianoPostComment piano_post_comments = 1;
+  string next_page_token = 2;
+}
+
+message DeletePianoPostCommentRequest {
+  // "pianos/{piano_id}/posts/{post_id}/comments/{comment_id}"
+  string name = 1;
+}
+
+message DeletePianoPostCommentResponse {}

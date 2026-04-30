@@ -7,8 +7,10 @@ import { LikedPianoPostList } from "../components/LikedPianoPostList";
 import { PianoPostCard } from "../components/PianoPostCard";
 import { SignUpPromptModal } from "../components/SignUpPromptModal";
 import { Tabs } from "../components/Tabs";
+import { UserCommentList } from "../components/UserCommentList";
 import { UserPianoList } from "../components/UserPianoList";
 import { useAuth } from "../lib/auth";
+import { useMe } from "../lib/use-me";
 import { pianoPostClient, userClient } from "../lib/api-client";
 import { GetUserRequest, User } from "../lib/gen/user/v1/user_pb";
 import {
@@ -24,10 +26,11 @@ export function meta({ params }: Route.MetaArgs) {
   return [{ title: `@${params.customId} — PiaMap` }];
 }
 
-type ProfileTab = "posts" | "wishlist" | "visited" | "favorite" | "liked";
+type ProfileTab = "posts" | "wishlist" | "visited" | "favorite" | "liked" | "comments";
 
 export default function ProfileOther() {
   const { authed } = useAuth();
+  const me = useMe();
   const { customId } = useParams();
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<PianoPost[]>([]);
@@ -104,6 +107,7 @@ export default function ProfileOther() {
               tabs={[
                 { id: "posts", label: "投稿" },
                 { id: "liked", label: "いいね" },
+                { id: "comments", label: "コメント" },
                 { id: "wishlist", label: "行ってみたい" },
                 { id: "visited", label: "行ったことある" },
                 { id: "favorite", label: "お気に入り" },
@@ -124,6 +128,7 @@ export default function ProfileOther() {
                         <PianoPostCard
                           post={p}
                           showPiano
+                          currentUserCustomId={me?.customId}
                           canLike={authed}
                           onLikeUnauthorized={() => setSignUpOpen(true)}
                         />
@@ -134,8 +139,11 @@ export default function ProfileOther() {
               ) : tab === "liked" ? (
                 <LikedPianoPostList
                   customId={customId ?? ""}
+                  currentUserCustomId={me?.customId}
                   onLikeUnauthorized={() => setSignUpOpen(true)}
                 />
+              ) : tab === "comments" ? (
+                <UserCommentList customId={customId ?? ""} />
               ) : tab === "wishlist" ? (
                 <UserPianoList
                   customId={customId ?? ""}

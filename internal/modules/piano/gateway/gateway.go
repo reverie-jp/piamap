@@ -28,6 +28,8 @@ type CreatePianoParams = repository.CreatePianoParams
 type UpdatePianoParams = repository.UpdatePianoParams
 type SearchInBBoxParams = repository.SearchInBBoxParams
 type SearchNearbyParams = repository.SearchNearbyParams
+type SearchByTextParams = repository.SearchByTextParams
+type AttributeFilters = repository.AttributeFilters
 type CreatePianoEditParams = repository.CreatePianoEditParams
 type ListPianoEditsParams = repository.ListPianoEditsParams
 
@@ -35,6 +37,7 @@ type Gateway interface {
 	GetPiano(ctx context.Context, id ulid.ULID) (*entity.Piano, error)
 	SearchInBBox(ctx context.Context, params SearchInBBoxParams) ([]*entity.Piano, error)
 	SearchNearby(ctx context.Context, params SearchNearbyParams) ([]*entity.Piano, error)
+	SearchByText(ctx context.Context, params SearchByTextParams) ([]*entity.Piano, error)
 	CreatePiano(ctx context.Context, params CreatePianoParams) error
 	UpdatePiano(ctx context.Context, params UpdatePianoParams) error
 	UpdatePianoLocation(ctx context.Context, id ulid.ULID, loc entity.LatLng) error
@@ -67,6 +70,10 @@ func (g *gatewayImpl) SearchInBBox(ctx context.Context, params SearchInBBoxParam
 
 func (g *gatewayImpl) SearchNearby(ctx context.Context, params SearchNearbyParams) ([]*entity.Piano, error) {
 	return g.repo.SearchNearby(ctx, params)
+}
+
+func (g *gatewayImpl) SearchByText(ctx context.Context, params SearchByTextParams) ([]*entity.Piano, error) {
+	return g.repo.SearchByText(ctx, params)
 }
 
 func (g *gatewayImpl) CreatePiano(ctx context.Context, params CreatePianoParams) error {

@@ -818,8 +818,24 @@ type SearchPianosRequest struct {
 	PianoType *PianoType `protobuf:"varint,6,opt,name=piano_type,json=pianoType,proto3,enum=piano.v1.PianoType,oneof" json:"piano_type,omitempty"`
 	// rating 平均の最低値 (1..5)。0 / 未指定で無条件。
 	MinRatingAverage *float64 `protobuf:"fixed64,7,opt,name=min_rating_average,json=minRatingAverage,proto3,oneof" json:"min_rating_average,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// テキスト検索 (ピアノ名 name に ILIKE 部分一致)。
+	// セット時は bounds / center は無視してグローバル検索。
+	Query *string `protobuf:"bytes,8,opt,name=query,proto3,oneof" json:"query,omitempty"`
+	// メーカーフィルタ (piano_brand と ILIKE で大文字小文字無視の完全一致)。
+	PianoBrand *string `protobuf:"bytes,9,opt,name=piano_brand,json=pianoBrand,proto3,oneof" json:"piano_brand,omitempty"`
+	// 5 環境属性の平均値の最低値 (1..5)。post_count が 0 の場合は除外される。
+	// 値の意味: 1=静か / 5=賑やか
+	MinAmbientNoiseAverage *float64 `protobuf:"fixed64,10,opt,name=min_ambient_noise_average,json=minAmbientNoiseAverage,proto3,oneof" json:"min_ambient_noise_average,omitempty"`
+	// 1=人通り少 / 5=人通り多
+	MinFootTrafficAverage *float64 `protobuf:"fixed64,11,opt,name=min_foot_traffic_average,json=minFootTrafficAverage,proto3,oneof" json:"min_foot_traffic_average,omitempty"`
+	// 1=響き弱い / 5=響き豊か
+	MinResonanceAverage *float64 `protobuf:"fixed64,12,opt,name=min_resonance_average,json=minResonanceAverage,proto3,oneof" json:"min_resonance_average,omitempty"`
+	// 1=鍵盤軽い / 5=鍵盤重い
+	MinKeyTouchWeightAverage *float64 `protobuf:"fixed64,13,opt,name=min_key_touch_weight_average,json=minKeyTouchWeightAverage,proto3,oneof" json:"min_key_touch_weight_average,omitempty"`
+	// 1=調律悪い / 5=調律良い
+	MinTuningQualityAverage *float64 `protobuf:"fixed64,14,opt,name=min_tuning_quality_average,json=minTuningQualityAverage,proto3,oneof" json:"min_tuning_quality_average,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *SearchPianosRequest) Reset() {
@@ -897,6 +913,55 @@ func (x *SearchPianosRequest) GetPianoType() PianoType {
 func (x *SearchPianosRequest) GetMinRatingAverage() float64 {
 	if x != nil && x.MinRatingAverage != nil {
 		return *x.MinRatingAverage
+	}
+	return 0
+}
+
+func (x *SearchPianosRequest) GetQuery() string {
+	if x != nil && x.Query != nil {
+		return *x.Query
+	}
+	return ""
+}
+
+func (x *SearchPianosRequest) GetPianoBrand() string {
+	if x != nil && x.PianoBrand != nil {
+		return *x.PianoBrand
+	}
+	return ""
+}
+
+func (x *SearchPianosRequest) GetMinAmbientNoiseAverage() float64 {
+	if x != nil && x.MinAmbientNoiseAverage != nil {
+		return *x.MinAmbientNoiseAverage
+	}
+	return 0
+}
+
+func (x *SearchPianosRequest) GetMinFootTrafficAverage() float64 {
+	if x != nil && x.MinFootTrafficAverage != nil {
+		return *x.MinFootTrafficAverage
+	}
+	return 0
+}
+
+func (x *SearchPianosRequest) GetMinResonanceAverage() float64 {
+	if x != nil && x.MinResonanceAverage != nil {
+		return *x.MinResonanceAverage
+	}
+	return 0
+}
+
+func (x *SearchPianosRequest) GetMinKeyTouchWeightAverage() float64 {
+	if x != nil && x.MinKeyTouchWeightAverage != nil {
+		return *x.MinKeyTouchWeightAverage
+	}
+	return 0
+}
+
+func (x *SearchPianosRequest) GetMinTuningQualityAverage() float64 {
+	if x != nil && x.MinTuningQualityAverage != nil {
+		return *x.MinTuningQualityAverage
 	}
 	return 0
 }
@@ -1420,7 +1485,7 @@ const file_piano_v1_piano_proto_rawDesc = "" +
 	"\x0fGetPianoRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"9\n" +
 	"\x10GetPianoResponse\x12%\n" +
-	"\x05piano\x18\x01 \x01(\v2\x0f.piano.v1.PianoR\x05piano\"\xaa\x03\n" +
+	"\x05piano\x18\x01 \x01(\v2\x0f.piano.v1.PianoR\x05piano\"\xd8\a\n" +
 	"\x13SearchPianosRequest\x123\n" +
 	"\x06bounds\x18\x01 \x01(\v2\x16.piano.v1.LatLngBoundsH\x00R\x06bounds\x88\x01\x01\x12-\n" +
 	"\x06center\x18\x02 \x01(\v2\x10.piano.v1.LatLngH\x01R\x06center\x88\x01\x01\x12\x1e\n" +
@@ -1429,14 +1494,31 @@ const file_piano_v1_piano_proto_rawDesc = "" +
 	"\x04kind\x18\x05 \x01(\x0e2\x13.piano.v1.PianoKindH\x04R\x04kind\x88\x01\x01\x127\n" +
 	"\n" +
 	"piano_type\x18\x06 \x01(\x0e2\x13.piano.v1.PianoTypeH\x05R\tpianoType\x88\x01\x01\x121\n" +
-	"\x12min_rating_average\x18\a \x01(\x01H\x06R\x10minRatingAverage\x88\x01\x01B\t\n" +
+	"\x12min_rating_average\x18\a \x01(\x01H\x06R\x10minRatingAverage\x88\x01\x01\x12\x19\n" +
+	"\x05query\x18\b \x01(\tH\aR\x05query\x88\x01\x01\x12$\n" +
+	"\vpiano_brand\x18\t \x01(\tH\bR\n" +
+	"pianoBrand\x88\x01\x01\x12>\n" +
+	"\x19min_ambient_noise_average\x18\n" +
+	" \x01(\x01H\tR\x16minAmbientNoiseAverage\x88\x01\x01\x12<\n" +
+	"\x18min_foot_traffic_average\x18\v \x01(\x01H\n" +
+	"R\x15minFootTrafficAverage\x88\x01\x01\x127\n" +
+	"\x15min_resonance_average\x18\f \x01(\x01H\vR\x13minResonanceAverage\x88\x01\x01\x12C\n" +
+	"\x1cmin_key_touch_weight_average\x18\r \x01(\x01H\fR\x18minKeyTouchWeightAverage\x88\x01\x01\x12@\n" +
+	"\x1amin_tuning_quality_average\x18\x0e \x01(\x01H\rR\x17minTuningQualityAverage\x88\x01\x01B\t\n" +
 	"\a_boundsB\t\n" +
 	"\a_centerB\v\n" +
 	"\t_radius_mB\b\n" +
 	"\x06_limitB\a\n" +
 	"\x05_kindB\r\n" +
 	"\v_piano_typeB\x15\n" +
-	"\x13_min_rating_average\"?\n" +
+	"\x13_min_rating_averageB\b\n" +
+	"\x06_queryB\x0e\n" +
+	"\f_piano_brandB\x1c\n" +
+	"\x1a_min_ambient_noise_averageB\x1b\n" +
+	"\x19_min_foot_traffic_averageB\x18\n" +
+	"\x16_min_resonance_averageB\x1f\n" +
+	"\x1d_min_key_touch_weight_averageB\x1d\n" +
+	"\x1b_min_tuning_quality_average\"?\n" +
 	"\x14SearchPianosResponse\x12'\n" +
 	"\x06pianos\x18\x01 \x03(\v2\x0f.piano.v1.PianoR\x06pianos\";\n" +
 	"\x12CreatePianoRequest\x12%\n" +

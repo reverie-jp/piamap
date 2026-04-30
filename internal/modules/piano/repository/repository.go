@@ -72,6 +72,14 @@ type UpdatePianoParams struct {
 	RemoveTime          *time.Time
 }
 
+type AttributeFilters struct {
+	MinAmbientNoiseAverage   *float64
+	MinFootTrafficAverage    *float64
+	MinResonanceAverage      *float64
+	MinKeyTouchWeightAverage *float64
+	MinTuningQualityAverage  *float64
+}
+
 type SearchInBBoxParams struct {
 	MinLat           float64
 	MinLng           float64
@@ -79,7 +87,9 @@ type SearchInBBoxParams struct {
 	MaxLng           float64
 	Kind             *entity.PianoKind
 	PianoType        *entity.PianoType
+	PianoBrand       *string
 	MinRatingAverage *float64
+	Attributes       AttributeFilters
 	Limit            int32
 }
 
@@ -89,7 +99,19 @@ type SearchNearbyParams struct {
 	RadiusM          float64
 	Kind             *entity.PianoKind
 	PianoType        *entity.PianoType
+	PianoBrand       *string
 	MinRatingAverage *float64
+	Attributes       AttributeFilters
+	Limit            int32
+}
+
+type SearchByTextParams struct {
+	Query            string // ILIKE パターン (% 付きの形で渡す)
+	Kind             *entity.PianoKind
+	PianoType        *entity.PianoType
+	PianoBrand       *string
+	MinRatingAverage *float64
+	Attributes       AttributeFilters
 	Limit            int32
 }
 
@@ -111,6 +133,7 @@ type Repository interface {
 	GetPianoByID(ctx context.Context, id ulid.ULID) (*entity.Piano, error)
 	SearchInBBox(ctx context.Context, params SearchInBBoxParams) ([]*entity.Piano, error)
 	SearchNearby(ctx context.Context, params SearchNearbyParams) ([]*entity.Piano, error)
+	SearchByText(ctx context.Context, params SearchByTextParams) ([]*entity.Piano, error)
 	CreatePiano(ctx context.Context, params CreatePianoParams) error
 	UpdatePiano(ctx context.Context, params UpdatePianoParams) error
 	UpdatePianoLocation(ctx context.Context, id ulid.ULID, loc entity.LatLng) error
@@ -171,10 +194,16 @@ func (r *RepositoryImpl) SearchInBBox(ctx context.Context, params SearchInBBoxPa
 		MinLat:           params.MinLat,
 		MaxLng:           params.MaxLng,
 		MaxLat:           params.MaxLat,
-		Kind:             toNullPianoKind(params.Kind),
-		PianoType:        toNullPianoType(params.PianoType),
-		MinRatingAverage: params.MinRatingAverage,
-		LimitCount:       params.Limit,
+		Kind:                     toNullPianoKind(params.Kind),
+		PianoType:                toNullPianoType(params.PianoType),
+		PianoBrand:               params.PianoBrand,
+		MinRatingAverage:         params.MinRatingAverage,
+		MinAmbientNoiseAverage:   params.Attributes.MinAmbientNoiseAverage,
+		MinFootTrafficAverage:    params.Attributes.MinFootTrafficAverage,
+		MinResonanceAverage:      params.Attributes.MinResonanceAverage,
+		MinKeyTouchWeightAverage: params.Attributes.MinKeyTouchWeightAverage,
+		MinTuningQualityAverage:  params.Attributes.MinTuningQualityAverage,
+		LimitCount:               params.Limit,
 	})
 	if err != nil {
 		return nil, err
@@ -191,10 +220,16 @@ func (r *RepositoryImpl) SearchNearby(ctx context.Context, params SearchNearbyPa
 		CenterLng:        params.CenterLng,
 		CenterLat:        params.CenterLat,
 		RadiusM:          params.RadiusM,
-		Kind:             toNullPianoKind(params.Kind),
-		PianoType:        toNullPianoType(params.PianoType),
-		MinRatingAverage: params.MinRatingAverage,
-		LimitCount:       params.Limit,
+		Kind:                     toNullPianoKind(params.Kind),
+		PianoType:                toNullPianoType(params.PianoType),
+		PianoBrand:               params.PianoBrand,
+		MinRatingAverage:         params.MinRatingAverage,
+		MinAmbientNoiseAverage:   params.Attributes.MinAmbientNoiseAverage,
+		MinFootTrafficAverage:    params.Attributes.MinFootTrafficAverage,
+		MinResonanceAverage:      params.Attributes.MinResonanceAverage,
+		MinKeyTouchWeightAverage: params.Attributes.MinKeyTouchWeightAverage,
+		MinTuningQualityAverage:  params.Attributes.MinTuningQualityAverage,
+		LimitCount:               params.Limit,
 	})
 	if err != nil {
 		return nil, err
@@ -202,6 +237,30 @@ func (r *RepositoryImpl) SearchNearby(ctx context.Context, params SearchNearbyPa
 	out := make([]*entity.Piano, len(rows))
 	for i := range rows {
 		out[i] = mapper.ToPianoFromNearbyRow(&rows[i])
+	}
+	return out, nil
+}
+
+func (r *RepositoryImpl) SearchByText(ctx context.Context, params SearchByTextParams) ([]*entity.Piano, error) {
+	rows, err := r.q.SearchPianosByText(ctx, sqlc.SearchPianosByTextParams{
+		QueryPattern:     params.Query,
+		Kind:                     toNullPianoKind(params.Kind),
+		PianoType:                toNullPianoType(params.PianoType),
+		PianoBrand:               params.PianoBrand,
+		MinRatingAverage:         params.MinRatingAverage,
+		MinAmbientNoiseAverage:   params.Attributes.MinAmbientNoiseAverage,
+		MinFootTrafficAverage:    params.Attributes.MinFootTrafficAverage,
+		MinResonanceAverage:      params.Attributes.MinResonanceAverage,
+		MinKeyTouchWeightAverage: params.Attributes.MinKeyTouchWeightAverage,
+		MinTuningQualityAverage:  params.Attributes.MinTuningQualityAverage,
+		LimitCount:               params.Limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*entity.Piano, len(rows))
+	for i := range rows {
+		out[i] = mapper.ToPianoFromTextSearchRow(&rows[i])
 	}
 	return out, nil
 }

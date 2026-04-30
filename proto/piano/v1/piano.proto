@@ -156,6 +156,25 @@ message SearchPianosRequest {
   optional PianoType piano_type = 6;
   // rating 平均の最低値 (1..5)。0 / 未指定で無条件。
   optional double min_rating_average = 7;
+
+  // テキスト検索 (ピアノ名 name に ILIKE 部分一致)。
+  // セット時は bounds / center は無視してグローバル検索。
+  optional string query = 8;
+
+  // メーカーフィルタ (piano_brand と ILIKE で大文字小文字無視の完全一致)。
+  optional string piano_brand = 9;
+
+  // 5 環境属性の平均値の最低値 (1..5)。post_count が 0 の場合は除外される。
+  // 値の意味: 1=静か / 5=賑やか
+  optional double min_ambient_noise_average = 10;
+  // 1=人通り少 / 5=人通り多
+  optional double min_foot_traffic_average = 11;
+  // 1=響き弱い / 5=響き豊か
+  optional double min_resonance_average = 12;
+  // 1=鍵盤軽い / 5=鍵盤重い
+  optional double min_key_touch_weight_average = 13;
+  // 1=調律悪い / 5=調律良い
+  optional double min_tuning_quality_average = 14;
 }
 
 message SearchPianosResponse {

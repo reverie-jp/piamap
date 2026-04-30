@@ -9,11 +9,13 @@ import { Button } from "../components/ui/button";
 import { Select } from "../components/ui/select";
 import { TextField } from "../components/ui/text-field";
 import { Sheet } from "../components/ui/sheet";
+import { EMPTY_FILTERS, MapSearchBar, type MapSearchFilters } from "../components/MapSearchBar";
 import { PianoAttributeMeters } from "../components/PianoAttributeMeters";
 import { SignUpPromptModal } from "../components/SignUpPromptModal";
 import { pianoClient } from "../lib/api-client";
 import { useAuth } from "../lib/auth";
 import { findStyle, getSavedStyleId } from "../lib/map-styles";
+import { getSavedMapView, saveMapView } from "../lib/map-view-state";
 import {
   CreatePianoRequest,
   GetPianoRequest,
@@ -68,6 +70,8 @@ export default function MapPage() {
   const [relocateSummary, setRelocateSummary] = useState("");
   const [relocateSubmitting, setRelocateSubmitting] = useState(false);
   const [relocateErr, setRelocateErr] = useState<string | null>(null);
+  const [filters, setFilters] = useState<MapSearchFilters>(EMPTY_FILTERS);
+  const [searchClearSignal, setSearchClearSignal] = useState(0);
 
   const inRelocate = relocate !== null;
 
@@ -82,6 +86,14 @@ export default function MapPage() {
         }),
         limit: 200,
       });
+      if (filters.pianoType !== undefined) req.pianoType = filters.pianoType;
+      if (filters.pianoBrand !== undefined) req.pianoBrand = filters.pianoBrand;
+      if (filters.minRatingAverage !== undefined) req.minRatingAverage = filters.minRatingAverage;
+      if (filters.minAmbientNoiseAverage !== undefined) req.minAmbientNoiseAverage = filters.minAmbientNoiseAverage;
+      if (filters.minFootTrafficAverage !== undefined) req.minFootTrafficAverage = filters.minFootTrafficAverage;
+      if (filters.minResonanceAverage !== undefined) req.minResonanceAverage = filters.minResonanceAverage;
+      if (filters.minKeyTouchWeightAverage !== undefined) req.minKeyTouchWeightAverage = filters.minKeyTouchWeightAverage;
+      if (filters.minTuningQualityAverage !== undefined) req.minTuningQualityAverage = filters.minTuningQualityAverage;
       if (opts?.showLoading) setIsFetching(true);
       try {
         const res = await pianoClient.searchPianos(req);
@@ -92,24 +104,52 @@ export default function MapPage() {
         if (opts?.showLoading) setIsFetching(false);
       }
     },
-    [],
+    [
+      filters.pianoType,
+      filters.pianoBrand,
+      filters.minRatingAverage,
+      filters.minAmbientNoiseAverage,
+      filters.minFootTrafficAverage,
+      filters.minResonanceAverage,
+      filters.minKeyTouchWeightAverage,
+      filters.minTuningQualityAverage,
+    ],
   );
+
+  // map.on("moveend", ...) のクロージャを毎度作り直さないため、最新の fetchPianos を ref で参照する。
+  const fetchPianosRef = useRef(fetchPianos);
+  useEffect(() => {
+    fetchPianosRef.current = fetchPianos;
+  }, [fetchPianos]);
+
+  // フィルタ変更時に現在のbboxで再検索 (マーカーに反映)。
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    fetchPianos(map.getBounds());
+  }, [fetchPianos]);
 
   // map 初期化。
   useEffect(() => {
     if (!containerRef.current) return;
     const initial = findStyle(getSavedStyleId());
+    // 詳細画面から戻った時に位置を復元するため、sessionStorage の前回ビューを優先。
+    const saved = getSavedMapView();
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: initial.style,
-      center: TOKYO,
-      zoom: 13,
+      center: saved ? [saved.lng, saved.lat] : TOKYO,
+      zoom: saved ? saved.zoom : 13,
       attributionControl: { compact: true },
     });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    // モバイルは pinch zoom が基本。NavigationControl は省略してヘッダーとの重なりを避ける。
     mapRef.current = map;
 
-    const onLoadOrMove = () => fetchPianos(map.getBounds());
+    const onLoadOrMove = () => {
+      const c = map.getCenter();
+      saveMapView({ lng: c.lng, lat: c.lat, zoom: map.getZoom() });
+      fetchPianosRef.current(map.getBounds());
+    };
     map.on("load", onLoadOrMove);
     map.on("moveend", onLoadOrMove);
 
@@ -300,6 +340,24 @@ export default function MapPage() {
     <div className="relative h-[calc(100dvh-4rem)] w-full overflow-hidden">
       <div ref={containerRef} className="h-full w-full" />
 
+      {!inRelocate && !createMode ? (
+        <MapSearchBar
+          filters={filters}
+          onFiltersChange={setFilters}
+          clearSignal={searchClearSignal}
+          onSelect={(p) => {
+            const map = mapRef.current;
+            if (map && p.location) {
+              map.flyTo({
+                center: [p.location.longitude, p.location.latitude],
+                zoom: Math.max(map.getZoom(), 15),
+              });
+            }
+            setSelected(p);
+          }}
+        />
+      ) : null}
+
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-0 bg-slate-900/40 transition-opacity duration-200 ${
@@ -336,7 +394,7 @@ export default function MapPage() {
       ) : null}
 
       {createMode ? (
-        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-slate-900/85 px-4 py-2 text-xs font-medium text-white shadow">
+        <div className="pointer-events-none absolute left-1/2 top-3 z-30 -translate-x-1/2 rounded-full bg-slate-900/85 px-4 py-2 text-xs font-medium text-white shadow">
           地図をタップして登録地点を選択
         </div>
       ) : null}
@@ -388,7 +446,12 @@ export default function MapPage() {
 
       <Sheet
         isOpen={!inRelocate && selected !== null}
-        onOpenChange={(open) => !open && setSelected(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelected(null);
+            setSearchClearSignal((n) => n + 1);
+          }
+        }}
         title={selected?.displayName}
       >
         {selected ? <PianoSummary piano={selected} /> : null}

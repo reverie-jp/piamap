@@ -3,6 +3,7 @@ import { ScrollText } from "lucide-react";
 
 import { pianoPostClient } from "../lib/api-client";
 import { useAuth } from "../lib/auth";
+import { useMe } from "../lib/use-me";
 import {
   ListPianoPostsRequest,
   type PianoPost,
@@ -18,6 +19,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Timeline() {
   const { authed } = useAuth();
+  const me = useMe();
   const [posts, setPosts] = useState<PianoPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -57,6 +59,7 @@ export default function Timeline() {
                 <PianoPostCard
                   post={p}
                   showPiano
+                  currentUserCustomId={me?.customId}
                   canLike={authed}
                   onLikeUnauthorized={() => setSignUpOpen(true)}
                 />
