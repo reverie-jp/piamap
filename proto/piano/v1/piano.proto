@@ -17,6 +17,9 @@ service PianoService {
 
   // ピアノ編集 (認証必須、piano_edits に operation='update' / 'status_change' / 'kind_change' で記録)。
   rpc UpdatePiano(UpdatePianoRequest) returns (UpdatePianoResponse) {}
+
+  // ピアノの編集ログ一覧 (ゲスト可)。
+  rpc ListPianoEdits(ListPianoEditsRequest) returns (ListPianoEditsResponse) {}
 }
 
 // Enums (DB ENUM と 1:1)
@@ -50,6 +53,17 @@ enum PianoAvailability {
   PIANO_AVAILABILITY_IRREGULAR = 2;
   PIANO_AVAILABILITY_EVENT_ONLY = 3;
   PIANO_AVAILABILITY_WEATHER_DEPENDENT = 4;
+}
+
+enum PianoEditOperation {
+  PIANO_EDIT_OPERATION_UNSPECIFIED = 0;
+  PIANO_EDIT_OPERATION_CREATE = 1;
+  PIANO_EDIT_OPERATION_UPDATE = 2;
+  PIANO_EDIT_OPERATION_PHOTO_ADD = 3;
+  PIANO_EDIT_OPERATION_PHOTO_REMOVE = 4;
+  PIANO_EDIT_OPERATION_STATUS_CHANGE = 5;
+  PIANO_EDIT_OPERATION_KIND_CHANGE = 6;
+  PIANO_EDIT_OPERATION_RESTORE = 7;
 }
 
 // Common types
@@ -165,4 +179,29 @@ message UpdatePianoRequest {
 
 message UpdatePianoResponse {
   Piano piano = 1;
+}
+
+// AIP-122: name = "pianos/{piano_id}/edits/{edit_id}"
+message PianoEdit {
+  string name = 1;
+  // 編集者リソース名 ("users/{custom_id}")。SET NULL の場合は空文字列。
+  string editor = 2;
+  string editor_display_name = 3;
+  PianoEditOperation operation = 4;
+  optional string summary = 5;
+  // 変更内容の JSON 文字列 (生のままフロントに渡す。MVP は表示しないことも多い)。
+  optional string changes_json = 6;
+  google.protobuf.Timestamp create_time = 7;
+}
+
+message ListPianoEditsRequest {
+  // 親 "pianos/{piano_id}"
+  string parent = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+
+message ListPianoEditsResponse {
+  repeated PianoEdit edits = 1;
+  string next_page_token = 2;
 }

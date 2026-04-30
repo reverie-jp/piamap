@@ -59,3 +59,37 @@ body {
     transform: scale(1);
   }
 }
+
+/* 控えめなスクロールバー。スクロール中だけ薄く出る。 */
+@utility scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 200ms ease;
+}
+.scrollbar-subtle::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-subtle::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-subtle::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  transition: background-color 200ms ease;
+}
+.scrollbar-subtle:hover::-webkit-scrollbar-thumb,
+.scrollbar-subtle:focus-within::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35); /* slate-500 / 35% */
+}
+.scrollbar-subtle:hover {
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+
+/* スクロールバーを完全に非表示。タブのような操作不要なスクロール領域用。 */
+@utility scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

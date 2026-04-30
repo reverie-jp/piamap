@@ -5,6 +5,9 @@ sql:
     queries:
       - "./internal/modules/account/sql"
       - "./internal/modules/piano/sql"
+      - "./internal/modules/piano_post/sql"
+      - "./internal/modules/piano_post_like/sql"
+      - "./internal/modules/piano_user_list/sql"
       - "./internal/modules/user/sql"
     gen:
       go:

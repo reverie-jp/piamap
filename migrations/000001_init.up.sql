@@ -169,6 +169,8 @@ CREATE TABLE IF NOT EXISTS piano_posts (
     -- 公開範囲(private でも数値集計には反映する)
     visibility post_visibility NOT NULL DEFAULT 'public',
     comment_count INT NOT NULL DEFAULT 0,
+    -- いいね数(piano_post_likes トリガで保守)
+    like_count INT NOT NULL DEFAULT 0,
     create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     update_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -186,6 +188,17 @@ CREATE TABLE IF NOT EXISTS piano_post_images (
 );
 
 CREATE INDEX idx_piano_post_images_post ON piano_post_images(piano_post_id, display_order);
+
+-- 投稿への「いいね」。同一 (user, post) は 1 行のみ (PRIMARY KEY)。
+CREATE TABLE IF NOT EXISTS piano_post_likes (
+    user_id ulid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    piano_post_id ulid NOT NULL REFERENCES piano_posts(id) ON DELETE CASCADE,
+    create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, piano_post_id)
+);
+
+CREATE INDEX idx_piano_post_likes_post ON piano_post_likes(piano_post_id);
+CREATE INDEX idx_piano_post_likes_user_create ON piano_post_likes(user_id, create_time DESC);
 
 -- ============================================================================
 -- Comments
@@ -480,6 +493,22 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_piano_post_comments_counters
 AFTER INSERT OR DELETE ON piano_post_comments
 FOR EACH ROW EXECUTE FUNCTION piano_post_comment_counters_sync();
+
+-- piano_posts.like_count を piano_post_likes の INSERT/DELETE に追従
+CREATE FUNCTION piano_post_like_counter_sync() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE piano_posts SET like_count = like_count + 1 WHERE id = NEW.piano_post_id;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE piano_posts SET like_count = GREATEST(like_count - 1, 0) WHERE id = OLD.piano_post_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_piano_post_likes_counter
+AFTER INSERT OR DELETE ON piano_post_likes
+FOR EACH ROW EXECUTE FUNCTION piano_post_like_counter_sync();
 
 -- users.post_count を piano_posts の変動に追従
 CREATE FUNCTION user_post_counter_sync() RETURNS TRIGGER AS $$

@@ -11,6 +11,9 @@ DROP FUNCTION IF EXISTS user_edit_counter_sync();
 DROP TRIGGER IF EXISTS trg_user_post_counter ON piano_posts;
 DROP FUNCTION IF EXISTS user_post_counter_sync();
 
+DROP TRIGGER IF EXISTS trg_piano_post_likes_counter ON piano_post_likes;
+DROP FUNCTION IF EXISTS piano_post_like_counter_sync();
+
 DROP TRIGGER IF EXISTS trg_piano_post_comments_counters ON piano_post_comments;
 DROP FUNCTION IF EXISTS piano_post_comment_counters_sync();
 
@@ -27,6 +30,7 @@ DROP TABLE IF EXISTS piano_watches;
 DROP TABLE IF EXISTS piano_edits;
 DROP TABLE IF EXISTS piano_comments;
 DROP TABLE IF EXISTS piano_post_comments;
+DROP TABLE IF EXISTS piano_post_likes;
 DROP TABLE IF EXISTS piano_post_images;
 DROP TABLE IF EXISTS piano_posts;
 DROP TABLE IF EXISTS piano_photos;

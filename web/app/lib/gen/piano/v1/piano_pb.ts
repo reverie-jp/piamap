@@ -153,6 +153,62 @@ proto3.util.setEnumType(PianoAvailability, "piano.v1.PianoAvailability", [
 ]);
 
 /**
+ * @generated from enum piano.v1.PianoEditOperation
+ */
+export enum PianoEditOperation {
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_CREATE = 1;
+   */
+  CREATE = 1,
+
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_UPDATE = 2;
+   */
+  UPDATE = 2,
+
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_PHOTO_ADD = 3;
+   */
+  PHOTO_ADD = 3,
+
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_PHOTO_REMOVE = 4;
+   */
+  PHOTO_REMOVE = 4,
+
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_STATUS_CHANGE = 5;
+   */
+  STATUS_CHANGE = 5,
+
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_KIND_CHANGE = 6;
+   */
+  KIND_CHANGE = 6,
+
+  /**
+   * @generated from enum value: PIANO_EDIT_OPERATION_RESTORE = 7;
+   */
+  RESTORE = 7,
+}
+// Retrieve enum metadata with: proto3.getEnumType(PianoEditOperation)
+proto3.util.setEnumType(PianoEditOperation, "piano.v1.PianoEditOperation", [
+  { no: 0, name: "PIANO_EDIT_OPERATION_UNSPECIFIED" },
+  { no: 1, name: "PIANO_EDIT_OPERATION_CREATE" },
+  { no: 2, name: "PIANO_EDIT_OPERATION_UPDATE" },
+  { no: 3, name: "PIANO_EDIT_OPERATION_PHOTO_ADD" },
+  { no: 4, name: "PIANO_EDIT_OPERATION_PHOTO_REMOVE" },
+  { no: 5, name: "PIANO_EDIT_OPERATION_STATUS_CHANGE" },
+  { no: 6, name: "PIANO_EDIT_OPERATION_KIND_CHANGE" },
+  { no: 7, name: "PIANO_EDIT_OPERATION_RESTORE" },
+]);
+
+/**
  * @generated from message piano.v1.LatLng
  */
 export class LatLng extends Message<LatLng> {
@@ -836,6 +892,179 @@ export class UpdatePianoResponse extends Message<UpdatePianoResponse> {
 
   static equals(a: UpdatePianoResponse | PlainMessage<UpdatePianoResponse> | undefined, b: UpdatePianoResponse | PlainMessage<UpdatePianoResponse> | undefined): boolean {
     return proto3.util.equals(UpdatePianoResponse, a, b);
+  }
+}
+
+/**
+ * AIP-122: name = "pianos/{piano_id}/edits/{edit_id}"
+ *
+ * @generated from message piano.v1.PianoEdit
+ */
+export class PianoEdit extends Message<PianoEdit> {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * 編集者リソース名 ("users/{custom_id}")。SET NULL の場合は空文字列。
+   *
+   * @generated from field: string editor = 2;
+   */
+  editor = "";
+
+  /**
+   * @generated from field: string editor_display_name = 3;
+   */
+  editorDisplayName = "";
+
+  /**
+   * @generated from field: piano.v1.PianoEditOperation operation = 4;
+   */
+  operation = PianoEditOperation.UNSPECIFIED;
+
+  /**
+   * @generated from field: optional string summary = 5;
+   */
+  summary?: string;
+
+  /**
+   * 変更内容の JSON 文字列 (生のままフロントに渡す。MVP は表示しないことも多い)。
+   *
+   * @generated from field: optional string changes_json = 6;
+   */
+  changesJson?: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp create_time = 7;
+   */
+  createTime?: Timestamp;
+
+  constructor(data?: PartialMessage<PianoEdit>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "piano.v1.PianoEdit";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "editor", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "editor_display_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "operation", kind: "enum", T: proto3.getEnumType(PianoEditOperation) },
+    { no: 5, name: "summary", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 6, name: "changes_json", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 7, name: "create_time", kind: "message", T: Timestamp },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PianoEdit {
+    return new PianoEdit().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): PianoEdit {
+    return new PianoEdit().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): PianoEdit {
+    return new PianoEdit().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: PianoEdit | PlainMessage<PianoEdit> | undefined, b: PianoEdit | PlainMessage<PianoEdit> | undefined): boolean {
+    return proto3.util.equals(PianoEdit, a, b);
+  }
+}
+
+/**
+ * @generated from message piano.v1.ListPianoEditsRequest
+ */
+export class ListPianoEditsRequest extends Message<ListPianoEditsRequest> {
+  /**
+   * 親 "pianos/{piano_id}"
+   *
+   * @generated from field: string parent = 1;
+   */
+  parent = "";
+
+  /**
+   * @generated from field: optional int32 page_size = 2;
+   */
+  pageSize?: number;
+
+  /**
+   * @generated from field: optional string page_token = 3;
+   */
+  pageToken?: string;
+
+  constructor(data?: PartialMessage<ListPianoEditsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "piano.v1.ListPianoEditsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "parent", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */, opt: true },
+    { no: 3, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListPianoEditsRequest {
+    return new ListPianoEditsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListPianoEditsRequest {
+    return new ListPianoEditsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListPianoEditsRequest {
+    return new ListPianoEditsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListPianoEditsRequest | PlainMessage<ListPianoEditsRequest> | undefined, b: ListPianoEditsRequest | PlainMessage<ListPianoEditsRequest> | undefined): boolean {
+    return proto3.util.equals(ListPianoEditsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message piano.v1.ListPianoEditsResponse
+ */
+export class ListPianoEditsResponse extends Message<ListPianoEditsResponse> {
+  /**
+   * @generated from field: repeated piano.v1.PianoEdit edits = 1;
+   */
+  edits: PianoEdit[] = [];
+
+  /**
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken = "";
+
+  constructor(data?: PartialMessage<ListPianoEditsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "piano.v1.ListPianoEditsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "edits", kind: "message", T: PianoEdit, repeated: true },
+    { no: 2, name: "next_page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListPianoEditsResponse {
+    return new ListPianoEditsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListPianoEditsResponse {
+    return new ListPianoEditsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListPianoEditsResponse {
+    return new ListPianoEditsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListPianoEditsResponse | PlainMessage<ListPianoEditsResponse> | undefined, b: ListPianoEditsResponse | PlainMessage<ListPianoEditsResponse> | undefined): boolean {
+    return proto3.util.equals(ListPianoEditsResponse, a, b);
   }
 }
 

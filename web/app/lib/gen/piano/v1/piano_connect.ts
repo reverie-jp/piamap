@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreatePianoRequest, CreatePianoResponse, GetPianoRequest, GetPianoResponse, SearchPianosRequest, SearchPianosResponse, UpdatePianoRequest, UpdatePianoResponse } from "./piano_pb.js";
+import { CreatePianoRequest, CreatePianoResponse, GetPianoRequest, GetPianoResponse, ListPianoEditsRequest, ListPianoEditsResponse, SearchPianosRequest, SearchPianosResponse, UpdatePianoRequest, UpdatePianoResponse } from "./piano_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -54,6 +54,17 @@ export const PianoService = {
       name: "UpdatePiano",
       I: UpdatePianoRequest,
       O: UpdatePianoResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * ピアノの編集ログ一覧 (ゲスト可)。
+     *
+     * @generated from rpc piano.v1.PianoService.ListPianoEdits
+     */
+    listPianoEdits: {
+      name: "ListPianoEdits",
+      I: ListPianoEditsRequest,
+      O: ListPianoEditsResponse,
       kind: MethodKind.Unary,
     },
   }

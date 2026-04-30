@@ -611,67 +611,104 @@ func (q *Queries) ListPianosNearby(ctx context.Context, arg ListPianosNearbyPara
 
 const updatePiano = `-- name: UpdatePiano :exec
 UPDATE pianos SET
-    name              = COALESCE($1, name),
-    description       = COALESCE($2, description),
-    address           = COALESCE($3, address),
-    prefecture        = COALESCE($4, prefecture),
-    city              = COALESCE($5, city),
-    kind              = COALESCE($6::piano_kind, kind),
-    venue_type        = COALESCE($7, venue_type),
-    piano_type        = COALESCE($8::piano_type, piano_type),
-    piano_brand       = COALESCE($9, piano_brand),
-    piano_model       = COALESCE($10, piano_model),
-    manufacture_year  = COALESCE($11, manufacture_year),
-    hours             = COALESCE($12, hours),
-    status            = COALESCE($13::piano_status, status),
-    availability      = COALESCE($14::piano_availability, availability),
-    availability_note = COALESCE($15, availability_note),
-    install_time      = COALESCE($16::timestamptz, install_time),
-    remove_time       = COALESCE($17::timestamptz, remove_time),
+    name              = CASE WHEN $1::bool              THEN $2                              ELSE name              END,
+    description       = CASE WHEN $3::bool       THEN $4                       ELSE description       END,
+    address           = CASE WHEN $5::bool           THEN $6                           ELSE address           END,
+    prefecture        = CASE WHEN $7::bool        THEN $8                        ELSE prefecture        END,
+    city              = CASE WHEN $9::bool              THEN $10                              ELSE city              END,
+    kind              = CASE WHEN $11::bool              THEN $12::piano_kind                  ELSE kind              END,
+    venue_type        = CASE WHEN $13::bool        THEN $14                        ELSE venue_type        END,
+    piano_type        = CASE WHEN $15::bool        THEN $16::piano_type            ELSE piano_type        END,
+    piano_brand       = CASE WHEN $17::bool       THEN $18                       ELSE piano_brand       END,
+    piano_model       = CASE WHEN $19::bool       THEN $20                       ELSE piano_model       END,
+    manufacture_year  = CASE WHEN $21::bool  THEN $22                  ELSE manufacture_year  END,
+    hours             = CASE WHEN $23::bool             THEN $24                             ELSE hours             END,
+    status            = CASE WHEN $25::bool            THEN $26::piano_status              ELSE status            END,
+    availability      = CASE WHEN $27::bool      THEN $28::piano_availability  ELSE availability      END,
+    availability_note = CASE WHEN $29::bool THEN $30                 ELSE availability_note END,
+    install_time      = CASE WHEN $31::bool      THEN $32::timestamptz         ELSE install_time      END,
+    remove_time       = CASE WHEN $33::bool       THEN $34::timestamptz          ELSE remove_time       END,
     update_time       = NOW()
-WHERE id = $18::ulid
+WHERE id = $35::ulid
 `
 
 type UpdatePianoParams struct {
-	Name             *string               `json:"name"`
-	Description      *string               `json:"description"`
-	Address          *string               `json:"address"`
-	Prefecture       *string               `json:"prefecture"`
-	City             *string               `json:"city"`
-	Kind             NullPianoKind         `json:"kind"`
-	VenueType        *string               `json:"venue_type"`
-	PianoType        NullPianoType         `json:"piano_type"`
-	PianoBrand       *string               `json:"piano_brand"`
-	PianoModel       *string               `json:"piano_model"`
-	ManufactureYear  *int16                `json:"manufacture_year"`
-	Hours            *string               `json:"hours"`
-	Status           NullPianoStatus       `json:"status"`
-	Availability     NullPianoAvailability `json:"availability"`
-	AvailabilityNote *string               `json:"availability_note"`
-	InstallTime      *time.Time            `json:"install_time"`
-	RemoveTime       *time.Time            `json:"remove_time"`
-	ID               ulid.ULID             `json:"id"`
+	SetName             bool                  `json:"set_name"`
+	Name                *string               `json:"name"`
+	SetDescription      bool                  `json:"set_description"`
+	Description         *string               `json:"description"`
+	SetAddress          bool                  `json:"set_address"`
+	Address             *string               `json:"address"`
+	SetPrefecture       bool                  `json:"set_prefecture"`
+	Prefecture          *string               `json:"prefecture"`
+	SetCity             bool                  `json:"set_city"`
+	City                *string               `json:"city"`
+	SetKind             bool                  `json:"set_kind"`
+	Kind                NullPianoKind         `json:"kind"`
+	SetVenueType        bool                  `json:"set_venue_type"`
+	VenueType           *string               `json:"venue_type"`
+	SetPianoType        bool                  `json:"set_piano_type"`
+	PianoType           NullPianoType         `json:"piano_type"`
+	SetPianoBrand       bool                  `json:"set_piano_brand"`
+	PianoBrand          *string               `json:"piano_brand"`
+	SetPianoModel       bool                  `json:"set_piano_model"`
+	PianoModel          *string               `json:"piano_model"`
+	SetManufactureYear  bool                  `json:"set_manufacture_year"`
+	ManufactureYear     *int16                `json:"manufacture_year"`
+	SetHours            bool                  `json:"set_hours"`
+	Hours               *string               `json:"hours"`
+	SetStatus           bool                  `json:"set_status"`
+	Status              NullPianoStatus       `json:"status"`
+	SetAvailability     bool                  `json:"set_availability"`
+	Availability        NullPianoAvailability `json:"availability"`
+	SetAvailabilityNote bool                  `json:"set_availability_note"`
+	AvailabilityNote    *string               `json:"availability_note"`
+	SetInstallTime      bool                  `json:"set_install_time"`
+	InstallTime         *time.Time            `json:"install_time"`
+	SetRemoveTime       bool                  `json:"set_remove_time"`
+	RemoveTime          *time.Time            `json:"remove_time"`
+	ID                  ulid.ULID             `json:"id"`
 }
 
-// COALESCE で「指定されたフィールドだけ更新」を実現。location は別 :exec で更新する (geography 関数のため)。
+// set_X が true のフィールドだけ更新する (NULL 化も含めて値そのまま反映)。
+// false のフィールドは既存値を保持。NOT NULL カラム (name / kind / piano_type / piano_brand /
+// status / availability) は usecase 層で set_X=true のとき値存在を保証する。
+// location は geography 関数のため別 :exec で更新する。
 func (q *Queries) UpdatePiano(ctx context.Context, arg UpdatePianoParams) error {
 	_, err := q.db.Exec(ctx, updatePiano,
+		arg.SetName,
 		arg.Name,
+		arg.SetDescription,
 		arg.Description,
+		arg.SetAddress,
 		arg.Address,
+		arg.SetPrefecture,
 		arg.Prefecture,
+		arg.SetCity,
 		arg.City,
+		arg.SetKind,
 		arg.Kind,
+		arg.SetVenueType,
 		arg.VenueType,
+		arg.SetPianoType,
 		arg.PianoType,
+		arg.SetPianoBrand,
 		arg.PianoBrand,
+		arg.SetPianoModel,
 		arg.PianoModel,
+		arg.SetManufactureYear,
 		arg.ManufactureYear,
+		arg.SetHours,
 		arg.Hours,
+		arg.SetStatus,
 		arg.Status,
+		arg.SetAvailability,
 		arg.Availability,
+		arg.SetAvailabilityNote,
 		arg.AvailabilityNote,
+		arg.SetInstallTime,
 		arg.InstallTime,
+		arg.SetRemoveTime,
 		arg.RemoveTime,
 		arg.ID,
 	)

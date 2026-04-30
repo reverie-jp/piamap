@@ -68,24 +68,41 @@ func (uc *UpdatePiano) Execute(ctx context.Context, input UpdatePianoInput) (*Up
 	err = uc.tx.WithTx(ctx, func(q sqlc.Querier) error {
 		txPianoGw := gateway.New(q, uc.userGateway)
 		if err := txPianoGw.UpdatePiano(ctx, gateway.UpdatePianoParams{
-			ID:               input.PianoID,
-			Name:             optStr(input.SetName, input.Name),
-			Description:      optPtrStr(input.SetDescription, input.Description),
-			Address:          optPtrStr(input.SetAddress, input.Address),
-			Prefecture:       optPtrStr(input.SetPrefecture, input.Prefecture),
-			City:             optPtrStr(input.SetCity, input.City),
-			Kind:             optKind(input.SetKind, input.Kind),
-			VenueType:        optPtrStr(input.SetVenueType, input.VenueType),
-			PianoType:        optPianoType(input.SetPianoType, input.PianoType),
-			PianoBrand:       optStr(input.SetPianoBrand, input.PianoBrand),
-			PianoModel:       optPtrStr(input.SetPianoModel, input.PianoModel),
-			ManufactureYear:  optPtrInt16(input.SetManufactureYear, input.ManufactureYear),
-			Hours:            optPtrStr(input.SetHours, input.Hours),
-			Status:           optStatus(input.SetStatus, input.Status),
-			Availability:     optAvailability(input.SetAvailability, input.Availability),
-			AvailabilityNote: optPtrStr(input.SetAvailabilityNote, input.AvailabilityNote),
-			InstallTime:      optPtrTime(input.SetInstallTime, input.InstallTime),
-			RemoveTime:       optPtrTime(input.SetRemoveTime, input.RemoveTime),
+			ID:                  input.PianoID,
+			SetName:             input.SetName,
+			Name:                optStr(input.SetName, input.Name),
+			SetDescription:      input.SetDescription,
+			Description:         optPtrStr(input.SetDescription, input.Description),
+			SetAddress:          input.SetAddress,
+			Address:             optPtrStr(input.SetAddress, input.Address),
+			SetPrefecture:       input.SetPrefecture,
+			Prefecture:          optPtrStr(input.SetPrefecture, input.Prefecture),
+			SetCity:             input.SetCity,
+			City:                optPtrStr(input.SetCity, input.City),
+			SetKind:             input.SetKind,
+			Kind:                optKind(input.SetKind, input.Kind),
+			SetVenueType:        input.SetVenueType,
+			VenueType:           optPtrStr(input.SetVenueType, input.VenueType),
+			SetPianoType:        input.SetPianoType,
+			PianoType:           optPianoType(input.SetPianoType, input.PianoType),
+			SetPianoBrand:       input.SetPianoBrand,
+			PianoBrand:          optStr(input.SetPianoBrand, input.PianoBrand),
+			SetPianoModel:       input.SetPianoModel,
+			PianoModel:          optPtrStr(input.SetPianoModel, input.PianoModel),
+			SetManufactureYear:  input.SetManufactureYear,
+			ManufactureYear:     optPtrInt16(input.SetManufactureYear, input.ManufactureYear),
+			SetHours:            input.SetHours,
+			Hours:               optPtrStr(input.SetHours, input.Hours),
+			SetStatus:           input.SetStatus,
+			Status:              optStatus(input.SetStatus, input.Status),
+			SetAvailability:     input.SetAvailability,
+			Availability:        optAvailability(input.SetAvailability, input.Availability),
+			SetAvailabilityNote: input.SetAvailabilityNote,
+			AvailabilityNote:    optPtrStr(input.SetAvailabilityNote, input.AvailabilityNote),
+			SetInstallTime:      input.SetInstallTime,
+			InstallTime:         optPtrTime(input.SetInstallTime, input.InstallTime),
+			SetRemoveTime:       input.SetRemoveTime,
+			RemoveTime:          optPtrTime(input.SetRemoveTime, input.RemoveTime),
 		}); err != nil {
 			return err
 		}
@@ -130,8 +147,77 @@ func chooseOperation(existing *entity.Piano, input UpdatePianoInput) entity.Pian
 
 func buildChangesJSON(existing *entity.Piano, input UpdatePianoInput) []byte {
 	changes := map[string]any{}
-	if input.SetName && input.Name != existing.Name {
-		changes["name"] = map[string]string{"old": existing.Name, "new": input.Name}
+	diffStr := func(key, oldV, newV string) {
+		if oldV != newV {
+			changes[key] = map[string]string{"old": oldV, "new": newV}
+		}
+	}
+	diffOptStr := func(key string, oldV *string, newV *string) {
+		o := derefStr(oldV)
+		n := derefStr(newV)
+		if o != n {
+			changes[key] = map[string]string{"old": o, "new": n}
+		}
+	}
+	diffOptInt16 := func(key string, oldV *int16, newV *int16) {
+		o := derefInt16(oldV)
+		n := derefInt16(newV)
+		if o != n {
+			changes[key] = map[string]any{"old": o, "new": n}
+		}
+	}
+	diffOptTime := func(key string, oldV *time.Time, newV *time.Time) {
+		o := formatOptTime(oldV)
+		n := formatOptTime(newV)
+		if o != n {
+			changes[key] = map[string]string{"old": o, "new": n}
+		}
+	}
+
+	if input.SetName {
+		diffStr("name", existing.Name, input.Name)
+	}
+	if input.SetDescription {
+		diffOptStr("description", existing.Description, input.Description)
+	}
+	if input.SetAddress {
+		diffOptStr("address", existing.Address, input.Address)
+	}
+	if input.SetPrefecture {
+		diffOptStr("prefecture", existing.Prefecture, input.Prefecture)
+	}
+	if input.SetCity {
+		diffOptStr("city", existing.City, input.City)
+	}
+	if input.SetVenueType {
+		diffOptStr("venue_type", existing.VenueType, input.VenueType)
+	}
+	if input.SetPianoBrand {
+		diffStr("piano_brand", existing.PianoBrand, input.PianoBrand)
+	}
+	if input.SetPianoModel {
+		diffOptStr("piano_model", existing.PianoModel, input.PianoModel)
+	}
+	if input.SetManufactureYear {
+		diffOptInt16("manufacture_year", existing.ManufactureYear, input.ManufactureYear)
+	}
+	if input.SetHours {
+		diffOptStr("hours", existing.Hours, input.Hours)
+	}
+	if input.SetPianoType && input.PianoType != existing.PianoType {
+		changes["piano_type"] = map[string]string{"old": string(existing.PianoType), "new": string(input.PianoType)}
+	}
+	if input.SetAvailability && input.Availability != existing.Availability {
+		changes["availability"] = map[string]string{"old": string(existing.Availability), "new": string(input.Availability)}
+	}
+	if input.SetAvailabilityNote {
+		diffOptStr("availability_note", existing.AvailabilityNote, input.AvailabilityNote)
+	}
+	if input.SetInstallTime {
+		diffOptTime("install_time", existing.InstallTime, input.InstallTime)
+	}
+	if input.SetRemoveTime {
+		diffOptTime("remove_time", existing.RemoveTime, input.RemoveTime)
 	}
 	if input.SetLocation && (input.Location.Latitude != existing.Location.Latitude || input.Location.Longitude != existing.Location.Longitude) {
 		changes["location"] = map[string]any{
@@ -150,6 +236,27 @@ func buildChangesJSON(existing *entity.Piano, input UpdatePianoInput) []byte {
 	}
 	b, _ := json.Marshal(changes)
 	return b
+}
+
+func derefStr(v *string) string {
+	if v == nil {
+		return ""
+	}
+	return *v
+}
+
+func derefInt16(v *int16) any {
+	if v == nil {
+		return nil
+	}
+	return *v
+}
+
+func formatOptTime(v *time.Time) string {
+	if v == nil {
+		return ""
+	}
+	return v.UTC().Format(time.RFC3339)
 }
 
 // haversineDistanceM は WGS84 ふたつの点の概算距離 (m)。

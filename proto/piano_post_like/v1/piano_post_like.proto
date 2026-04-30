@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package piano_post_like.v1;
+
+import "piano_post/v1/piano_post.proto";
+
+service PianoPostLikeService {
+  // 投稿にいいね (UPSERT、冪等)。認証必須。
+  rpc LikePianoPost(LikePianoPostRequest) returns (LikePianoPostResponse) {}
+
+  // いいね解除。認証必須。
+  rpc UnlikePianoPost(UnlikePianoPostRequest) returns (UnlikePianoPostResponse) {}
+
+  // 指定ユーザーがいいねした投稿一覧 (ゲスト可)。
+  rpc ListLikedPianoPosts(ListLikedPianoPostsRequest) returns (ListLikedPianoPostsResponse) {}
+}
+
+message LikePianoPostRequest {
+  // "pianos/{piano_id}/posts/{post_id}"
+  string parent = 1;
+}
+message LikePianoPostResponse {}
+
+message UnlikePianoPostRequest {
+  // "pianos/{piano_id}/posts/{post_id}"
+  string parent = 1;
+}
+message UnlikePianoPostResponse {}
+
+message ListLikedPianoPostsRequest {
+  // "users/{custom_id}"
+  string parent = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+message ListLikedPianoPostsResponse {
+  repeated piano_post.v1.PianoPost piano_posts = 1;
+  string next_page_token = 2;
+}

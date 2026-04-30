@@ -214,25 +214,28 @@ INSERT INTO pianos (
 );
 
 -- name: UpdatePiano :exec
--- COALESCE で「指定されたフィールドだけ更新」を実現。location は別 :exec で更新する (geography 関数のため)。
+-- set_X が true のフィールドだけ更新する (NULL 化も含めて値そのまま反映)。
+-- false のフィールドは既存値を保持。NOT NULL カラム (name / kind / piano_type / piano_brand /
+-- status / availability) は usecase 層で set_X=true のとき値存在を保証する。
+-- location は geography 関数のため別 :exec で更新する。
 UPDATE pianos SET
-    name              = COALESCE(sqlc.narg(name), name),
-    description       = COALESCE(sqlc.narg(description), description),
-    address           = COALESCE(sqlc.narg(address), address),
-    prefecture        = COALESCE(sqlc.narg(prefecture), prefecture),
-    city              = COALESCE(sqlc.narg(city), city),
-    kind              = COALESCE(sqlc.narg(kind)::piano_kind, kind),
-    venue_type        = COALESCE(sqlc.narg(venue_type), venue_type),
-    piano_type        = COALESCE(sqlc.narg(piano_type)::piano_type, piano_type),
-    piano_brand       = COALESCE(sqlc.narg(piano_brand), piano_brand),
-    piano_model       = COALESCE(sqlc.narg(piano_model), piano_model),
-    manufacture_year  = COALESCE(sqlc.narg(manufacture_year), manufacture_year),
-    hours             = COALESCE(sqlc.narg(hours), hours),
-    status            = COALESCE(sqlc.narg(status)::piano_status, status),
-    availability      = COALESCE(sqlc.narg(availability)::piano_availability, availability),
-    availability_note = COALESCE(sqlc.narg(availability_note), availability_note),
-    install_time      = COALESCE(sqlc.narg(install_time)::timestamptz, install_time),
-    remove_time       = COALESCE(sqlc.narg(remove_time)::timestamptz, remove_time),
+    name              = CASE WHEN sqlc.arg(set_name)::bool              THEN sqlc.narg(name)                              ELSE name              END,
+    description       = CASE WHEN sqlc.arg(set_description)::bool       THEN sqlc.narg(description)                       ELSE description       END,
+    address           = CASE WHEN sqlc.arg(set_address)::bool           THEN sqlc.narg(address)                           ELSE address           END,
+    prefecture        = CASE WHEN sqlc.arg(set_prefecture)::bool        THEN sqlc.narg(prefecture)                        ELSE prefecture        END,
+    city              = CASE WHEN sqlc.arg(set_city)::bool              THEN sqlc.narg(city)                              ELSE city              END,
+    kind              = CASE WHEN sqlc.arg(set_kind)::bool              THEN sqlc.narg(kind)::piano_kind                  ELSE kind              END,
+    venue_type        = CASE WHEN sqlc.arg(set_venue_type)::bool        THEN sqlc.narg(venue_type)                        ELSE venue_type        END,
+    piano_type        = CASE WHEN sqlc.arg(set_piano_type)::bool        THEN sqlc.narg(piano_type)::piano_type            ELSE piano_type        END,
+    piano_brand       = CASE WHEN sqlc.arg(set_piano_brand)::bool       THEN sqlc.narg(piano_brand)                       ELSE piano_brand       END,
+    piano_model       = CASE WHEN sqlc.arg(set_piano_model)::bool       THEN sqlc.narg(piano_model)                       ELSE piano_model       END,
+    manufacture_year  = CASE WHEN sqlc.arg(set_manufacture_year)::bool  THEN sqlc.narg(manufacture_year)                  ELSE manufacture_year  END,
+    hours             = CASE WHEN sqlc.arg(set_hours)::bool             THEN sqlc.narg(hours)                             ELSE hours             END,
+    status            = CASE WHEN sqlc.arg(set_status)::bool            THEN sqlc.narg(status)::piano_status              ELSE status            END,
+    availability      = CASE WHEN sqlc.arg(set_availability)::bool      THEN sqlc.narg(availability)::piano_availability  ELSE availability      END,
+    availability_note = CASE WHEN sqlc.arg(set_availability_note)::bool THEN sqlc.narg(availability_note)                 ELSE availability_note END,
+    install_time      = CASE WHEN sqlc.arg(set_install_time)::bool      THEN sqlc.narg(install_time)::timestamptz         ELSE install_time      END,
+    remove_time       = CASE WHEN sqlc.arg(set_remove_time)::bool       THEN sqlc.narg(remove_time)::timestamptz          ELSE remove_time       END,
     update_time       = NOW()
 WHERE id = sqlc.arg(id)::ulid;
 

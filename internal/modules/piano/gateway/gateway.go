@@ -17,11 +17,19 @@ type PianoView struct {
 	IsCreator       bool
 }
 
+// PianoEditView は PianoEdit に表示用の editor 情報を付与したもの。
+type PianoEditView struct {
+	Edit              *entity.PianoEdit
+	EditorCustomID    string
+	EditorDisplayName string
+}
+
 type CreatePianoParams = repository.CreatePianoParams
 type UpdatePianoParams = repository.UpdatePianoParams
 type SearchInBBoxParams = repository.SearchInBBoxParams
 type SearchNearbyParams = repository.SearchNearbyParams
 type CreatePianoEditParams = repository.CreatePianoEditParams
+type ListPianoEditsParams = repository.ListPianoEditsParams
 
 type Gateway interface {
 	GetPiano(ctx context.Context, id ulid.ULID) (*entity.Piano, error)
@@ -31,8 +39,10 @@ type Gateway interface {
 	UpdatePiano(ctx context.Context, params UpdatePianoParams) error
 	UpdatePianoLocation(ctx context.Context, id ulid.ULID, loc entity.LatLng) error
 	CreatePianoEdit(ctx context.Context, params CreatePianoEditParams) error
+	ListPianoEditsByPiano(ctx context.Context, params ListPianoEditsParams) ([]*entity.PianoEdit, error)
 	BuildPianoView(ctx context.Context, requesterID ulid.ULID, piano *entity.Piano) (*PianoView, error)
 	BuildListPianoViews(ctx context.Context, requesterID ulid.ULID, pianos []*entity.Piano) ([]*PianoView, error)
+	BuildListPianoEditViews(ctx context.Context, edits []*entity.PianoEdit) ([]*PianoEditView, error)
 }
 
 type gatewayImpl struct {
@@ -73,6 +83,54 @@ func (g *gatewayImpl) UpdatePianoLocation(ctx context.Context, id ulid.ULID, loc
 
 func (g *gatewayImpl) CreatePianoEdit(ctx context.Context, params CreatePianoEditParams) error {
 	return g.repo.CreatePianoEdit(ctx, params)
+}
+
+func (g *gatewayImpl) ListPianoEditsByPiano(ctx context.Context, params ListPianoEditsParams) ([]*entity.PianoEdit, error) {
+	return g.repo.ListPianoEditsByPiano(ctx, params)
+}
+
+func (g *gatewayImpl) BuildListPianoEditViews(ctx context.Context, edits []*entity.PianoEdit) ([]*PianoEditView, error) {
+	if len(edits) == 0 {
+		return []*PianoEditView{}, nil
+	}
+	editorIDs := make([]ulid.ULID, 0, len(edits))
+	seen := make(map[string]bool, len(edits))
+	for _, e := range edits {
+		if e == nil || e.EditorUserID == nil {
+			continue
+		}
+		k := e.EditorUserID.String()
+		if seen[k] {
+			continue
+		}
+		seen[k] = true
+		editorIDs = append(editorIDs, *e.EditorUserID)
+	}
+	editorByID := make(map[string]*entity.User, len(editorIDs))
+	if len(editorIDs) > 0 {
+		users, err := g.userGateway.ListUsersByIDs(ctx, editorIDs)
+		if err != nil {
+			return nil, err
+		}
+		for _, u := range users {
+			editorByID[u.ID.String()] = u
+		}
+	}
+	views := make([]*PianoEditView, len(edits))
+	for i, e := range edits {
+		if e == nil {
+			continue
+		}
+		v := &PianoEditView{Edit: e}
+		if e.EditorUserID != nil {
+			if u, ok := editorByID[e.EditorUserID.String()]; ok {
+				v.EditorCustomID = u.CustomID
+				v.EditorDisplayName = u.DisplayName
+			}
+		}
+		views[i] = v
+	}
+	return views, nil
 }
 
 func (g *gatewayImpl) BuildPianoView(ctx context.Context, requesterID ulid.ULID, piano *entity.Piano) (*PianoView, error) {

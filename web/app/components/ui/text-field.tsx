@@ -11,6 +11,8 @@ type Props = TextFieldProps & {
   placeholder?: string;
   multiline?: boolean;
   rows?: number;
+  /** Input の type 属性 (date / time / email など)。 */
+  type?: string;
   /** フィールド直下に赤字で表示するエラーメッセージ。 */
   errorMessage?: string;
 };
@@ -24,6 +26,7 @@ export function TextField({
   placeholder,
   multiline,
   rows = 3,
+  type,
   errorMessage,
   ...props
 }: Props) {
@@ -45,7 +48,7 @@ export function TextField({
       {multiline ? (
         <TextArea placeholder={placeholder} rows={rows} className={`${inputCls} resize-none`} />
       ) : (
-        <Input placeholder={placeholder} className={inputCls} />
+        <Input placeholder={placeholder} type={type} className={inputCls} />
       )}
       {errorMessage ? (
         <p className="mt-1 text-xs text-rose-600" role="alert">

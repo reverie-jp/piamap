@@ -24,3 +24,21 @@ export function parseUser(name: string): string {
   }
   return parts[1];
 }
+
+export function formatPianoPost(pianoId: string, postId: string): string {
+  return `pianos/${pianoId}/posts/${postId}`;
+}
+
+export function parsePianoPost(name: string): { pianoId: string; postId: string } {
+  const parts = name.split("/");
+  if (
+    parts.length !== 4 ||
+    parts[0] !== "pianos" ||
+    parts[2] !== "posts" ||
+    !parts[1] ||
+    !parts[3]
+  ) {
+    throw new Error(`invalid piano post resource name: ${name}`);
+  }
+  return { pianoId: parts[1], postId: parts[3] };
+}

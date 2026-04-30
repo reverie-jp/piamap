@@ -10,6 +10,9 @@ import (
 
 	"github.com/reverie-jp/piamap/internal/gen/pb/account/v1/accountv1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/piano/v1/pianov1connect"
+	"github.com/reverie-jp/piamap/internal/gen/pb/piano_post/v1/piano_postv1connect"
+	"github.com/reverie-jp/piamap/internal/gen/pb/piano_post_like/v1/piano_post_likev1connect"
+	"github.com/reverie-jp/piamap/internal/gen/pb/piano_user_list/v1/piano_user_listv1connect"
 	"github.com/reverie-jp/piamap/internal/gen/pb/user/v1/userv1connect"
 	"github.com/reverie-jp/piamap/internal/platform/jwt"
 	"github.com/reverie-jp/piamap/internal/platform/ulid"
@@ -38,9 +41,14 @@ var publicProcedures = map[string]bool{
 
 // optionalAuthProcedures: 認証はオプショナル。ヘッダ無しは guest 通過、有れば検証必須。
 var optionalAuthProcedures = map[string]bool{
-	userv1connect.UserServiceGetUserProcedure:       true,
-	pianov1connect.PianoServiceGetPianoProcedure:    true,
-	pianov1connect.PianoServiceSearchPianosProcedure: true,
+	userv1connect.UserServiceGetUserProcedure:                                    true,
+	pianov1connect.PianoServiceGetPianoProcedure:                                 true,
+	pianov1connect.PianoServiceSearchPianosProcedure:                             true,
+	pianov1connect.PianoServiceListPianoEditsProcedure:                           true,
+	piano_postv1connect.PianoPostServiceGetPianoPostProcedure:                    true,
+	piano_postv1connect.PianoPostServiceListPianoPostsProcedure:                  true,
+	piano_user_listv1connect.PianoUserListServiceListUserListPianosProcedure:     true,
+	piano_post_likev1connect.PianoPostLikeServiceListLikedPianoPostsProcedure:    true,
 }
 
 type authInterceptor struct {

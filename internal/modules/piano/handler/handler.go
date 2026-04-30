@@ -7,10 +7,11 @@ import (
 
 type Handler struct {
 	pianov1connect.UnimplementedPianoServiceHandler
-	getPiano     *usecase.GetPiano
-	searchPianos *usecase.SearchPianos
-	createPiano  *usecase.CreatePiano
-	updatePiano  *usecase.UpdatePiano
+	getPiano       *usecase.GetPiano
+	searchPianos   *usecase.SearchPianos
+	createPiano    *usecase.CreatePiano
+	updatePiano    *usecase.UpdatePiano
+	listPianoEdits *usecase.ListPianoEdits
 }
 
 func New(
@@ -18,11 +19,13 @@ func New(
 	searchPianos *usecase.SearchPianos,
 	createPiano *usecase.CreatePiano,
 	updatePiano *usecase.UpdatePiano,
+	listPianoEdits *usecase.ListPianoEdits,
 ) *Handler {
 	return &Handler{
-		getPiano:     getPiano,
-		searchPianos: searchPianos,
-		createPiano:  createPiano,
-		updatePiano:  updatePiano,
+		getPiano:       getPiano,
+		searchPianos:   searchPianos,
+		createPiano:    createPiano,
+		updatePiano:    updatePiano,
+		listPianoEdits: listPianoEdits,
 	}
 }

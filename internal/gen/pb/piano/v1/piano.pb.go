@@ -240,6 +240,70 @@ func (PianoAvailability) EnumDescriptor() ([]byte, []int) {
 	return file_piano_v1_piano_proto_rawDescGZIP(), []int{3}
 }
 
+type PianoEditOperation int32
+
+const (
+	PianoEditOperation_PIANO_EDIT_OPERATION_UNSPECIFIED   PianoEditOperation = 0
+	PianoEditOperation_PIANO_EDIT_OPERATION_CREATE        PianoEditOperation = 1
+	PianoEditOperation_PIANO_EDIT_OPERATION_UPDATE        PianoEditOperation = 2
+	PianoEditOperation_PIANO_EDIT_OPERATION_PHOTO_ADD     PianoEditOperation = 3
+	PianoEditOperation_PIANO_EDIT_OPERATION_PHOTO_REMOVE  PianoEditOperation = 4
+	PianoEditOperation_PIANO_EDIT_OPERATION_STATUS_CHANGE PianoEditOperation = 5
+	PianoEditOperation_PIANO_EDIT_OPERATION_KIND_CHANGE   PianoEditOperation = 6
+	PianoEditOperation_PIANO_EDIT_OPERATION_RESTORE       PianoEditOperation = 7
+)
+
+// Enum value maps for PianoEditOperation.
+var (
+	PianoEditOperation_name = map[int32]string{
+		0: "PIANO_EDIT_OPERATION_UNSPECIFIED",
+		1: "PIANO_EDIT_OPERATION_CREATE",
+		2: "PIANO_EDIT_OPERATION_UPDATE",
+		3: "PIANO_EDIT_OPERATION_PHOTO_ADD",
+		4: "PIANO_EDIT_OPERATION_PHOTO_REMOVE",
+		5: "PIANO_EDIT_OPERATION_STATUS_CHANGE",
+		6: "PIANO_EDIT_OPERATION_KIND_CHANGE",
+		7: "PIANO_EDIT_OPERATION_RESTORE",
+	}
+	PianoEditOperation_value = map[string]int32{
+		"PIANO_EDIT_OPERATION_UNSPECIFIED":   0,
+		"PIANO_EDIT_OPERATION_CREATE":        1,
+		"PIANO_EDIT_OPERATION_UPDATE":        2,
+		"PIANO_EDIT_OPERATION_PHOTO_ADD":     3,
+		"PIANO_EDIT_OPERATION_PHOTO_REMOVE":  4,
+		"PIANO_EDIT_OPERATION_STATUS_CHANGE": 5,
+		"PIANO_EDIT_OPERATION_KIND_CHANGE":   6,
+		"PIANO_EDIT_OPERATION_RESTORE":       7,
+	}
+)
+
+func (x PianoEditOperation) Enum() *PianoEditOperation {
+	p := new(PianoEditOperation)
+	*p = x
+	return p
+}
+
+func (x PianoEditOperation) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PianoEditOperation) Descriptor() protoreflect.EnumDescriptor {
+	return file_piano_v1_piano_proto_enumTypes[4].Descriptor()
+}
+
+func (PianoEditOperation) Type() protoreflect.EnumType {
+	return &file_piano_v1_piano_proto_enumTypes[4]
+}
+
+func (x PianoEditOperation) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PianoEditOperation.Descriptor instead.
+func (PianoEditOperation) EnumDescriptor() ([]byte, []int) {
+	return file_piano_v1_piano_proto_rawDescGZIP(), []int{4}
+}
+
 type LatLng struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Latitude      float64                `protobuf:"fixed64,1,opt,name=latitude,proto3" json:"latitude,omitempty"`
@@ -1074,6 +1138,214 @@ func (x *UpdatePianoResponse) GetPiano() *Piano {
 	return nil
 }
 
+// AIP-122: name = "pianos/{piano_id}/edits/{edit_id}"
+type PianoEdit struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 編集者リソース名 ("users/{custom_id}")。SET NULL の場合は空文字列。
+	Editor            string             `protobuf:"bytes,2,opt,name=editor,proto3" json:"editor,omitempty"`
+	EditorDisplayName string             `protobuf:"bytes,3,opt,name=editor_display_name,json=editorDisplayName,proto3" json:"editor_display_name,omitempty"`
+	Operation         PianoEditOperation `protobuf:"varint,4,opt,name=operation,proto3,enum=piano.v1.PianoEditOperation" json:"operation,omitempty"`
+	Summary           *string            `protobuf:"bytes,5,opt,name=summary,proto3,oneof" json:"summary,omitempty"`
+	// 変更内容の JSON 文字列 (生のままフロントに渡す。MVP は表示しないことも多い)。
+	ChangesJson   *string                `protobuf:"bytes,6,opt,name=changes_json,json=changesJson,proto3,oneof" json:"changes_json,omitempty"`
+	CreateTime    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PianoEdit) Reset() {
+	*x = PianoEdit{}
+	mi := &file_piano_v1_piano_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PianoEdit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PianoEdit) ProtoMessage() {}
+
+func (x *PianoEdit) ProtoReflect() protoreflect.Message {
+	mi := &file_piano_v1_piano_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PianoEdit.ProtoReflect.Descriptor instead.
+func (*PianoEdit) Descriptor() ([]byte, []int) {
+	return file_piano_v1_piano_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PianoEdit) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PianoEdit) GetEditor() string {
+	if x != nil {
+		return x.Editor
+	}
+	return ""
+}
+
+func (x *PianoEdit) GetEditorDisplayName() string {
+	if x != nil {
+		return x.EditorDisplayName
+	}
+	return ""
+}
+
+func (x *PianoEdit) GetOperation() PianoEditOperation {
+	if x != nil {
+		return x.Operation
+	}
+	return PianoEditOperation_PIANO_EDIT_OPERATION_UNSPECIFIED
+}
+
+func (x *PianoEdit) GetSummary() string {
+	if x != nil && x.Summary != nil {
+		return *x.Summary
+	}
+	return ""
+}
+
+func (x *PianoEdit) GetChangesJson() string {
+	if x != nil && x.ChangesJson != nil {
+		return *x.ChangesJson
+	}
+	return ""
+}
+
+func (x *PianoEdit) GetCreateTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreateTime
+	}
+	return nil
+}
+
+type ListPianoEditsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 親 "pianos/{piano_id}"
+	Parent        string  `protobuf:"bytes,1,opt,name=parent,proto3" json:"parent,omitempty"`
+	PageSize      *int32  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3,oneof" json:"page_size,omitempty"`
+	PageToken     *string `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3,oneof" json:"page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPianoEditsRequest) Reset() {
+	*x = ListPianoEditsRequest{}
+	mi := &file_piano_v1_piano_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPianoEditsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPianoEditsRequest) ProtoMessage() {}
+
+func (x *ListPianoEditsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_piano_v1_piano_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPianoEditsRequest.ProtoReflect.Descriptor instead.
+func (*ListPianoEditsRequest) Descriptor() ([]byte, []int) {
+	return file_piano_v1_piano_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ListPianoEditsRequest) GetParent() string {
+	if x != nil {
+		return x.Parent
+	}
+	return ""
+}
+
+func (x *ListPianoEditsRequest) GetPageSize() int32 {
+	if x != nil && x.PageSize != nil {
+		return *x.PageSize
+	}
+	return 0
+}
+
+func (x *ListPianoEditsRequest) GetPageToken() string {
+	if x != nil && x.PageToken != nil {
+		return *x.PageToken
+	}
+	return ""
+}
+
+type ListPianoEditsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Edits         []*PianoEdit           `protobuf:"bytes,1,rep,name=edits,proto3" json:"edits,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPianoEditsResponse) Reset() {
+	*x = ListPianoEditsResponse{}
+	mi := &file_piano_v1_piano_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPianoEditsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPianoEditsResponse) ProtoMessage() {}
+
+func (x *ListPianoEditsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_piano_v1_piano_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPianoEditsResponse.ProtoReflect.Descriptor instead.
+func (*ListPianoEditsResponse) Descriptor() ([]byte, []int) {
+	return file_piano_v1_piano_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListPianoEditsResponse) GetEdits() []*PianoEdit {
+	if x != nil {
+		return x.Edits
+	}
+	return nil
+}
+
+func (x *ListPianoEditsResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
 var File_piano_v1_piano_proto protoreflect.FileDescriptor
 
 const file_piano_v1_piano_proto_rawDesc = "" +
@@ -1178,7 +1450,30 @@ const file_piano_v1_piano_proto_rawDesc = "" +
 	"\fedit_summary\x18\x03 \x01(\tH\x00R\veditSummary\x88\x01\x01B\x0f\n" +
 	"\r_edit_summary\"<\n" +
 	"\x13UpdatePianoResponse\x12%\n" +
-	"\x05piano\x18\x01 \x01(\v2\x0f.piano.v1.PianoR\x05piano*\x94\x01\n" +
+	"\x05piano\x18\x01 \x01(\v2\x0f.piano.v1.PianoR\x05piano\"\xc4\x02\n" +
+	"\tPianoEdit\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
+	"\x06editor\x18\x02 \x01(\tR\x06editor\x12.\n" +
+	"\x13editor_display_name\x18\x03 \x01(\tR\x11editorDisplayName\x12:\n" +
+	"\toperation\x18\x04 \x01(\x0e2\x1c.piano.v1.PianoEditOperationR\toperation\x12\x1d\n" +
+	"\asummary\x18\x05 \x01(\tH\x00R\asummary\x88\x01\x01\x12&\n" +
+	"\fchanges_json\x18\x06 \x01(\tH\x01R\vchangesJson\x88\x01\x01\x12;\n" +
+	"\vcreate_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"createTimeB\n" +
+	"\n" +
+	"\b_summaryB\x0f\n" +
+	"\r_changes_json\"\x92\x01\n" +
+	"\x15ListPianoEditsRequest\x12\x16\n" +
+	"\x06parent\x18\x01 \x01(\tR\x06parent\x12 \n" +
+	"\tpage_size\x18\x02 \x01(\x05H\x00R\bpageSize\x88\x01\x01\x12\"\n" +
+	"\n" +
+	"page_token\x18\x03 \x01(\tH\x01R\tpageToken\x88\x01\x01B\f\n" +
+	"\n" +
+	"_page_sizeB\r\n" +
+	"\v_page_token\"k\n" +
+	"\x16ListPianoEditsResponse\x12)\n" +
+	"\x05edits\x18\x01 \x03(\v2\x13.piano.v1.PianoEditR\x05edits\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken*\x94\x01\n" +
 	"\vPianoStatus\x12\x1c\n" +
 	"\x18PIANO_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14PIANO_STATUS_PENDING\x10\x01\x12\x17\n" +
@@ -1201,12 +1496,22 @@ const file_piano_v1_piano_proto_rawDesc = "" +
 	"\x1aPIANO_AVAILABILITY_REGULAR\x10\x01\x12 \n" +
 	"\x1cPIANO_AVAILABILITY_IRREGULAR\x10\x02\x12!\n" +
 	"\x1dPIANO_AVAILABILITY_EVENT_ONLY\x10\x03\x12(\n" +
-	"$PIANO_AVAILABILITY_WEATHER_DEPENDENT\x10\x042\xc0\x02\n" +
+	"$PIANO_AVAILABILITY_WEATHER_DEPENDENT\x10\x04*\xb7\x02\n" +
+	"\x12PianoEditOperation\x12$\n" +
+	" PIANO_EDIT_OPERATION_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bPIANO_EDIT_OPERATION_CREATE\x10\x01\x12\x1f\n" +
+	"\x1bPIANO_EDIT_OPERATION_UPDATE\x10\x02\x12\"\n" +
+	"\x1ePIANO_EDIT_OPERATION_PHOTO_ADD\x10\x03\x12%\n" +
+	"!PIANO_EDIT_OPERATION_PHOTO_REMOVE\x10\x04\x12&\n" +
+	"\"PIANO_EDIT_OPERATION_STATUS_CHANGE\x10\x05\x12$\n" +
+	" PIANO_EDIT_OPERATION_KIND_CHANGE\x10\x06\x12 \n" +
+	"\x1cPIANO_EDIT_OPERATION_RESTORE\x10\a2\x97\x03\n" +
 	"\fPianoService\x12C\n" +
 	"\bGetPiano\x12\x19.piano.v1.GetPianoRequest\x1a\x1a.piano.v1.GetPianoResponse\"\x00\x12O\n" +
 	"\fSearchPianos\x12\x1d.piano.v1.SearchPianosRequest\x1a\x1e.piano.v1.SearchPianosResponse\"\x00\x12L\n" +
 	"\vCreatePiano\x12\x1c.piano.v1.CreatePianoRequest\x1a\x1d.piano.v1.CreatePianoResponse\"\x00\x12L\n" +
-	"\vUpdatePiano\x12\x1c.piano.v1.UpdatePianoRequest\x1a\x1d.piano.v1.UpdatePianoResponse\"\x00B\x9a\x01\n" +
+	"\vUpdatePiano\x12\x1c.piano.v1.UpdatePianoRequest\x1a\x1d.piano.v1.UpdatePianoResponse\"\x00\x12U\n" +
+	"\x0eListPianoEdits\x12\x1f.piano.v1.ListPianoEditsRequest\x1a .piano.v1.ListPianoEditsResponse\"\x00B\x9a\x01\n" +
 	"\fcom.piano.v1B\n" +
 	"PianoProtoP\x01Z=github.com/reverie-jp/piamap/internal/gen/pb/piano/v1;pianov1\xa2\x02\x03PXX\xaa\x02\bPiano.V1\xca\x02\bPiano\\V1\xe2\x02\x14Piano\\V1\\GPBMetadata\xea\x02\tPiano::V1b\x06proto3"
 
@@ -1222,63 +1527,72 @@ func file_piano_v1_piano_proto_rawDescGZIP() []byte {
 	return file_piano_v1_piano_proto_rawDescData
 }
 
-var file_piano_v1_piano_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_piano_v1_piano_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_piano_v1_piano_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_piano_v1_piano_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_piano_v1_piano_proto_goTypes = []any{
-	(PianoStatus)(0),              // 0: piano.v1.PianoStatus
-	(PianoType)(0),                // 1: piano.v1.PianoType
-	(PianoKind)(0),                // 2: piano.v1.PianoKind
-	(PianoAvailability)(0),        // 3: piano.v1.PianoAvailability
-	(*LatLng)(nil),                // 4: piano.v1.LatLng
-	(*LatLngBounds)(nil),          // 5: piano.v1.LatLngBounds
-	(*Piano)(nil),                 // 6: piano.v1.Piano
-	(*GetPianoRequest)(nil),       // 7: piano.v1.GetPianoRequest
-	(*GetPianoResponse)(nil),      // 8: piano.v1.GetPianoResponse
-	(*SearchPianosRequest)(nil),   // 9: piano.v1.SearchPianosRequest
-	(*SearchPianosResponse)(nil),  // 10: piano.v1.SearchPianosResponse
-	(*CreatePianoRequest)(nil),    // 11: piano.v1.CreatePianoRequest
-	(*CreatePianoResponse)(nil),   // 12: piano.v1.CreatePianoResponse
-	(*UpdatePianoRequest)(nil),    // 13: piano.v1.UpdatePianoRequest
-	(*UpdatePianoResponse)(nil),   // 14: piano.v1.UpdatePianoResponse
-	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil), // 16: google.protobuf.FieldMask
+	(PianoStatus)(0),               // 0: piano.v1.PianoStatus
+	(PianoType)(0),                 // 1: piano.v1.PianoType
+	(PianoKind)(0),                 // 2: piano.v1.PianoKind
+	(PianoAvailability)(0),         // 3: piano.v1.PianoAvailability
+	(PianoEditOperation)(0),        // 4: piano.v1.PianoEditOperation
+	(*LatLng)(nil),                 // 5: piano.v1.LatLng
+	(*LatLngBounds)(nil),           // 6: piano.v1.LatLngBounds
+	(*Piano)(nil),                  // 7: piano.v1.Piano
+	(*GetPianoRequest)(nil),        // 8: piano.v1.GetPianoRequest
+	(*GetPianoResponse)(nil),       // 9: piano.v1.GetPianoResponse
+	(*SearchPianosRequest)(nil),    // 10: piano.v1.SearchPianosRequest
+	(*SearchPianosResponse)(nil),   // 11: piano.v1.SearchPianosResponse
+	(*CreatePianoRequest)(nil),     // 12: piano.v1.CreatePianoRequest
+	(*CreatePianoResponse)(nil),    // 13: piano.v1.CreatePianoResponse
+	(*UpdatePianoRequest)(nil),     // 14: piano.v1.UpdatePianoRequest
+	(*UpdatePianoResponse)(nil),    // 15: piano.v1.UpdatePianoResponse
+	(*PianoEdit)(nil),              // 16: piano.v1.PianoEdit
+	(*ListPianoEditsRequest)(nil),  // 17: piano.v1.ListPianoEditsRequest
+	(*ListPianoEditsResponse)(nil), // 18: piano.v1.ListPianoEditsResponse
+	(*timestamppb.Timestamp)(nil),  // 19: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),  // 20: google.protobuf.FieldMask
 }
 var file_piano_v1_piano_proto_depIdxs = []int32{
-	4,  // 0: piano.v1.LatLngBounds.southwest:type_name -> piano.v1.LatLng
-	4,  // 1: piano.v1.LatLngBounds.northeast:type_name -> piano.v1.LatLng
-	4,  // 2: piano.v1.Piano.location:type_name -> piano.v1.LatLng
+	5,  // 0: piano.v1.LatLngBounds.southwest:type_name -> piano.v1.LatLng
+	5,  // 1: piano.v1.LatLngBounds.northeast:type_name -> piano.v1.LatLng
+	5,  // 2: piano.v1.Piano.location:type_name -> piano.v1.LatLng
 	2,  // 3: piano.v1.Piano.kind:type_name -> piano.v1.PianoKind
 	1,  // 4: piano.v1.Piano.piano_type:type_name -> piano.v1.PianoType
 	0,  // 5: piano.v1.Piano.status:type_name -> piano.v1.PianoStatus
 	3,  // 6: piano.v1.Piano.availability:type_name -> piano.v1.PianoAvailability
-	15, // 7: piano.v1.Piano.install_time:type_name -> google.protobuf.Timestamp
-	15, // 8: piano.v1.Piano.remove_time:type_name -> google.protobuf.Timestamp
-	15, // 9: piano.v1.Piano.create_time:type_name -> google.protobuf.Timestamp
-	15, // 10: piano.v1.Piano.update_time:type_name -> google.protobuf.Timestamp
-	6,  // 11: piano.v1.GetPianoResponse.piano:type_name -> piano.v1.Piano
-	5,  // 12: piano.v1.SearchPianosRequest.bounds:type_name -> piano.v1.LatLngBounds
-	4,  // 13: piano.v1.SearchPianosRequest.center:type_name -> piano.v1.LatLng
+	19, // 7: piano.v1.Piano.install_time:type_name -> google.protobuf.Timestamp
+	19, // 8: piano.v1.Piano.remove_time:type_name -> google.protobuf.Timestamp
+	19, // 9: piano.v1.Piano.create_time:type_name -> google.protobuf.Timestamp
+	19, // 10: piano.v1.Piano.update_time:type_name -> google.protobuf.Timestamp
+	7,  // 11: piano.v1.GetPianoResponse.piano:type_name -> piano.v1.Piano
+	6,  // 12: piano.v1.SearchPianosRequest.bounds:type_name -> piano.v1.LatLngBounds
+	5,  // 13: piano.v1.SearchPianosRequest.center:type_name -> piano.v1.LatLng
 	2,  // 14: piano.v1.SearchPianosRequest.kind:type_name -> piano.v1.PianoKind
 	1,  // 15: piano.v1.SearchPianosRequest.piano_type:type_name -> piano.v1.PianoType
-	6,  // 16: piano.v1.SearchPianosResponse.pianos:type_name -> piano.v1.Piano
-	6,  // 17: piano.v1.CreatePianoRequest.piano:type_name -> piano.v1.Piano
-	6,  // 18: piano.v1.CreatePianoResponse.piano:type_name -> piano.v1.Piano
-	6,  // 19: piano.v1.UpdatePianoRequest.piano:type_name -> piano.v1.Piano
-	16, // 20: piano.v1.UpdatePianoRequest.update_mask:type_name -> google.protobuf.FieldMask
-	6,  // 21: piano.v1.UpdatePianoResponse.piano:type_name -> piano.v1.Piano
-	7,  // 22: piano.v1.PianoService.GetPiano:input_type -> piano.v1.GetPianoRequest
-	9,  // 23: piano.v1.PianoService.SearchPianos:input_type -> piano.v1.SearchPianosRequest
-	11, // 24: piano.v1.PianoService.CreatePiano:input_type -> piano.v1.CreatePianoRequest
-	13, // 25: piano.v1.PianoService.UpdatePiano:input_type -> piano.v1.UpdatePianoRequest
-	8,  // 26: piano.v1.PianoService.GetPiano:output_type -> piano.v1.GetPianoResponse
-	10, // 27: piano.v1.PianoService.SearchPianos:output_type -> piano.v1.SearchPianosResponse
-	12, // 28: piano.v1.PianoService.CreatePiano:output_type -> piano.v1.CreatePianoResponse
-	14, // 29: piano.v1.PianoService.UpdatePiano:output_type -> piano.v1.UpdatePianoResponse
-	26, // [26:30] is the sub-list for method output_type
-	22, // [22:26] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	7,  // 16: piano.v1.SearchPianosResponse.pianos:type_name -> piano.v1.Piano
+	7,  // 17: piano.v1.CreatePianoRequest.piano:type_name -> piano.v1.Piano
+	7,  // 18: piano.v1.CreatePianoResponse.piano:type_name -> piano.v1.Piano
+	7,  // 19: piano.v1.UpdatePianoRequest.piano:type_name -> piano.v1.Piano
+	20, // 20: piano.v1.UpdatePianoRequest.update_mask:type_name -> google.protobuf.FieldMask
+	7,  // 21: piano.v1.UpdatePianoResponse.piano:type_name -> piano.v1.Piano
+	4,  // 22: piano.v1.PianoEdit.operation:type_name -> piano.v1.PianoEditOperation
+	19, // 23: piano.v1.PianoEdit.create_time:type_name -> google.protobuf.Timestamp
+	16, // 24: piano.v1.ListPianoEditsResponse.edits:type_name -> piano.v1.PianoEdit
+	8,  // 25: piano.v1.PianoService.GetPiano:input_type -> piano.v1.GetPianoRequest
+	10, // 26: piano.v1.PianoService.SearchPianos:input_type -> piano.v1.SearchPianosRequest
+	12, // 27: piano.v1.PianoService.CreatePiano:input_type -> piano.v1.CreatePianoRequest
+	14, // 28: piano.v1.PianoService.UpdatePiano:input_type -> piano.v1.UpdatePianoRequest
+	17, // 29: piano.v1.PianoService.ListPianoEdits:input_type -> piano.v1.ListPianoEditsRequest
+	9,  // 30: piano.v1.PianoService.GetPiano:output_type -> piano.v1.GetPianoResponse
+	11, // 31: piano.v1.PianoService.SearchPianos:output_type -> piano.v1.SearchPianosResponse
+	13, // 32: piano.v1.PianoService.CreatePiano:output_type -> piano.v1.CreatePianoResponse
+	15, // 33: piano.v1.PianoService.UpdatePiano:output_type -> piano.v1.UpdatePianoResponse
+	18, // 34: piano.v1.PianoService.ListPianoEdits:output_type -> piano.v1.ListPianoEditsResponse
+	30, // [30:35] is the sub-list for method output_type
+	25, // [25:30] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_piano_v1_piano_proto_init() }
@@ -1289,13 +1603,15 @@ func file_piano_v1_piano_proto_init() {
 	file_piano_v1_piano_proto_msgTypes[2].OneofWrappers = []any{}
 	file_piano_v1_piano_proto_msgTypes[5].OneofWrappers = []any{}
 	file_piano_v1_piano_proto_msgTypes[9].OneofWrappers = []any{}
+	file_piano_v1_piano_proto_msgTypes[11].OneofWrappers = []any{}
+	file_piano_v1_piano_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_piano_v1_piano_proto_rawDesc), len(file_piano_v1_piano_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   11,
+			NumEnums:      5,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

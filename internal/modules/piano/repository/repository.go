@@ -35,24 +35,41 @@ type CreatePianoParams struct {
 }
 
 type UpdatePianoParams struct {
-	ID               ulid.ULID
-	Name             *string
-	Description      *string
-	Address          *string
-	Prefecture       *string
-	City             *string
-	Kind             *entity.PianoKind
-	VenueType        *string
-	PianoType        *entity.PianoType
-	PianoBrand       *string
-	PianoModel       *string
-	ManufactureYear  *int16
-	Hours            *string
-	Status           *entity.PianoStatus
-	Availability     *entity.PianoAvailability
-	AvailabilityNote *string
-	InstallTime      *time.Time
-	RemoveTime       *time.Time
+	ID                  ulid.ULID
+	SetName             bool
+	Name                *string
+	SetDescription      bool
+	Description         *string
+	SetAddress          bool
+	Address             *string
+	SetPrefecture       bool
+	Prefecture          *string
+	SetCity             bool
+	City                *string
+	SetKind             bool
+	Kind                *entity.PianoKind
+	SetVenueType        bool
+	VenueType           *string
+	SetPianoType        bool
+	PianoType           *entity.PianoType
+	SetPianoBrand       bool
+	PianoBrand          *string
+	SetPianoModel       bool
+	PianoModel          *string
+	SetManufactureYear  bool
+	ManufactureYear     *int16
+	SetHours            bool
+	Hours               *string
+	SetStatus           bool
+	Status              *entity.PianoStatus
+	SetAvailability     bool
+	Availability        *entity.PianoAvailability
+	SetAvailabilityNote bool
+	AvailabilityNote    *string
+	SetInstallTime      bool
+	InstallTime         *time.Time
+	SetRemoveTime       bool
+	RemoveTime          *time.Time
 }
 
 type SearchInBBoxParams struct {
@@ -84,6 +101,12 @@ type CreatePianoEditParams struct {
 	Summary      *string
 }
 
+type ListPianoEditsParams struct {
+	PianoID ulid.ULID
+	AfterID *ulid.ULID
+	Limit   int32
+}
+
 type Repository interface {
 	GetPianoByID(ctx context.Context, id ulid.ULID) (*entity.Piano, error)
 	SearchInBBox(ctx context.Context, params SearchInBBoxParams) ([]*entity.Piano, error)
@@ -92,6 +115,7 @@ type Repository interface {
 	UpdatePiano(ctx context.Context, params UpdatePianoParams) error
 	UpdatePianoLocation(ctx context.Context, id ulid.ULID, loc entity.LatLng) error
 	CreatePianoEdit(ctx context.Context, params CreatePianoEditParams) error
+	ListPianoEditsByPiano(ctx context.Context, params ListPianoEditsParams) ([]*entity.PianoEdit, error)
 }
 
 type RepositoryImpl struct {
@@ -208,24 +232,41 @@ func (r *RepositoryImpl) CreatePiano(ctx context.Context, params CreatePianoPara
 
 func (r *RepositoryImpl) UpdatePiano(ctx context.Context, params UpdatePianoParams) error {
 	return r.q.UpdatePiano(ctx, sqlc.UpdatePianoParams{
-		ID:               params.ID,
-		Name:             params.Name,
-		Description:      params.Description,
-		Address:          params.Address,
-		Prefecture:       params.Prefecture,
-		City:             params.City,
-		Kind:             toNullPianoKind(params.Kind),
-		VenueType:        params.VenueType,
-		PianoType:        toNullPianoType(params.PianoType),
-		PianoBrand:       params.PianoBrand,
-		PianoModel:       params.PianoModel,
-		ManufactureYear:  params.ManufactureYear,
-		Hours:            params.Hours,
-		Status:           toNullPianoStatus(params.Status),
-		Availability:     toNullPianoAvailability(params.Availability),
-		AvailabilityNote: params.AvailabilityNote,
-		InstallTime:      params.InstallTime,
-		RemoveTime:       params.RemoveTime,
+		ID:                  params.ID,
+		SetName:             params.SetName,
+		Name:                params.Name,
+		SetDescription:      params.SetDescription,
+		Description:         params.Description,
+		SetAddress:          params.SetAddress,
+		Address:             params.Address,
+		SetPrefecture:       params.SetPrefecture,
+		Prefecture:          params.Prefecture,
+		SetCity:             params.SetCity,
+		City:                params.City,
+		SetKind:             params.SetKind,
+		Kind:                toNullPianoKind(params.Kind),
+		SetVenueType:        params.SetVenueType,
+		VenueType:           params.VenueType,
+		SetPianoType:        params.SetPianoType,
+		PianoType:           toNullPianoType(params.PianoType),
+		SetPianoBrand:       params.SetPianoBrand,
+		PianoBrand:          params.PianoBrand,
+		SetPianoModel:       params.SetPianoModel,
+		PianoModel:          params.PianoModel,
+		SetManufactureYear:  params.SetManufactureYear,
+		ManufactureYear:     params.ManufactureYear,
+		SetHours:            params.SetHours,
+		Hours:               params.Hours,
+		SetStatus:           params.SetStatus,
+		Status:              toNullPianoStatus(params.Status),
+		SetAvailability:     params.SetAvailability,
+		Availability:        toNullPianoAvailability(params.Availability),
+		SetAvailabilityNote: params.SetAvailabilityNote,
+		AvailabilityNote:    params.AvailabilityNote,
+		SetInstallTime:      params.SetInstallTime,
+		InstallTime:         params.InstallTime,
+		SetRemoveTime:       params.SetRemoveTime,
+		RemoveTime:          params.RemoveTime,
 	})
 }
 
@@ -246,4 +287,20 @@ func (r *RepositoryImpl) CreatePianoEdit(ctx context.Context, params CreatePiano
 		Changes:      params.Changes,
 		Summary:      params.Summary,
 	})
+}
+
+func (r *RepositoryImpl) ListPianoEditsByPiano(ctx context.Context, params ListPianoEditsParams) ([]*entity.PianoEdit, error) {
+	rows, err := r.q.ListPianoEditsByPiano(ctx, sqlc.ListPianoEditsByPianoParams{
+		PianoID:    params.PianoID,
+		AfterID:    params.AfterID,
+		LimitCount: params.Limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*entity.PianoEdit, len(rows))
+	for i := range rows {
+		out[i] = mapper.ToPianoEdit(&rows[i])
+	}
+	return out, nil
 }

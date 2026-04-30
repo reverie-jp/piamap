@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package piano_post.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+service PianoPostService {
+  // 投稿詳細取得 (公開投稿はゲスト可、private は author 本人のみ)。
+  rpc GetPianoPost(GetPianoPostRequest) returns (GetPianoPostResponse) {}
+
+  // 投稿一覧:
+  //   parent = "pianos/{piano_id}" — そのピアノの投稿一覧
+  //   parent = "users/{custom_id}" — そのユーザーの投稿一覧 (本人なら private 含む)
+  //   parent = "-"                  — 全公開投稿の新着 (タイムライン)
+  rpc ListPianoPosts(ListPianoPostsRequest) returns (ListPianoPostsResponse) {}
+
+  // 投稿作成 (認証必須、visited UPSERT を同 Tx で実施)。
+  rpc CreatePianoPost(CreatePianoPostRequest) returns (CreatePianoPostResponse) {}
+
+  // 投稿更新 (本人のみ)。FieldMask による partial update。
+  rpc UpdatePianoPost(UpdatePianoPostRequest) returns (UpdatePianoPostResponse) {}
+
+  // 投稿削除 (本人のみ)。集計列はトリガで自動同期。
+  rpc DeletePianoPost(DeletePianoPostRequest) returns (DeletePianoPostResponse) {}
+}
+
+enum PostVisibility {
+  POST_VISIBILITY_UNSPECIFIED = 0;
+  POST_VISIBILITY_PUBLIC = 1;
+  POST_VISIBILITY_PRIVATE = 2;
+}
+
+// AIP-122: name = "pianos/{piano_id}/posts/{post_id}"
+message PianoPost {
+  string name = 1;
+  // 投稿者 ("users/{custom_id}")。
+  string author = 2;
+  // 訪問日時 (作成時必須)。
+  google.protobuf.Timestamp visit_time = 3;
+  // 1..5 必須。
+  int32 rating = 4;
+  optional string body = 5;
+  // 5 環境属性 (任意、特徴メーター用)。
+  optional int32 ambient_noise = 6;
+  optional int32 foot_traffic = 7;
+  optional int32 resonance = 8;
+  optional int32 key_touch_weight = 9;
+  optional int32 tuning_quality = 10;
+  PostVisibility visibility = 11;
+  int32 comment_count = 12;
+  google.protobuf.Timestamp create_time = 13;
+  google.protobuf.Timestamp update_time = 14;
+
+  // 展開フィールド (タイムライン表示で N+1 を避けるため Server で hydrate)。
+  string author_display_name = 15;
+  string piano_name = 16; // "pianos/{piano_id}"
+  string piano_display_name = 17;
+
+  // いいね数 (DB トリガで保守)。
+  int32 like_count = 18;
+  // 認証ユーザーがこの投稿をいいねしているか。未認証/未いいねは false。
+  bool viewer_liked = 19;
+}
+
+message GetPianoPostRequest {
+  // "pianos/{piano_id}/posts/{post_id}"
+  string name = 1;
+}
+
+message GetPianoPostResponse {
+  PianoPost piano_post = 1;
+}
+
+message ListPianoPostsRequest {
+  // "pianos/{piano_id}" / "users/{custom_id}" / "-"
+  string parent = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+
+message ListPianoPostsResponse {
+  repeated PianoPost piano_posts = 1;
+  string next_page_token = 2;
+}
+
+message CreatePianoPostRequest {
+  // "pianos/{piano_id}"
+  string parent = 1;
+  PianoPost piano_post = 2;
+}
+
+message CreatePianoPostResponse {
+  PianoPost piano_post = 1;
+}
+
+message UpdatePianoPostRequest {
+  PianoPost piano_post = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message UpdatePianoPostResponse {
+  PianoPost piano_post = 1;
+}
+
+message DeletePianoPostRequest {
+  // "pianos/{piano_id}/posts/{post_id}"
+  string name = 1;
+}
+
+message DeletePianoPostResponse {}

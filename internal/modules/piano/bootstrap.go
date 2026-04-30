@@ -19,5 +19,6 @@ func InitModule(
 		usecase.NewSearchPianos(pianoGateway),
 		usecase.NewCreatePiano(pianoGateway, userGateway, tx),
 		usecase.NewUpdatePiano(pianoGateway, userGateway, tx),
+		usecase.NewListPianoEdits(pianoGateway),
 	)
 }

@@ -14,27 +14,63 @@ type Querier interface {
 	CreateAuthProvider(ctx context.Context, arg CreateAuthProviderParams) error
 	CreatePiano(ctx context.Context, arg CreatePianoParams) error
 	CreatePianoEdit(ctx context.Context, arg CreatePianoEditParams) error
+	CreatePianoPost(ctx context.Context, arg CreatePianoPostParams) error
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeleteExpiredRefreshTokensByUserID(ctx context.Context, userID ulid.ULID) error
+	DeletePianoPost(ctx context.Context, id ulid.ULID) error
+	DeletePianoPostLike(ctx context.Context, arg DeletePianoPostLikeParams) error
+	DeletePianoUserList(ctx context.Context, arg DeletePianoUserListParams) error
 	DeleteRefreshTokenByHash(ctx context.Context, arg DeleteRefreshTokenByHashParams) error
 	DeleteUser(ctx context.Context, id ulid.ULID) error
 	GetAuthProviderByProvider(ctx context.Context, arg GetAuthProviderByProviderParams) (UserAuthProvider, error)
 	GetPianoByID(ctx context.Context, id ulid.ULID) (GetPianoByIDRow, error)
+	GetPianoPostByID(ctx context.Context, id ulid.ULID) (GetPianoPostByIDRow, error)
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetUserByCustomID(ctx context.Context, customID string) (User, error)
 	GetUserByID(ctx context.Context, id ulid.ULID) (User, error)
 	IsUserCurrentlyRestricted(ctx context.Context, userID ulid.ULID) (bool, error)
+	// 指定ユーザーがいいねした投稿の ID 一覧 (新しい順)。
+	// create_time keyset。MVP は piano_post_id (ULID) を keyset 兼テキスト cursor として使う。
+	ListLikedPianoPostIDsByUser(ctx context.Context, arg ListLikedPianoPostIDsByUserParams) ([]ListLikedPianoPostIDsByUserRow, error)
+	// 指定ユーザーが [post_ids] のうちどの投稿にいいねしているかを返す (hydrate 用)。
+	// pgx に ulid[] のエンコーダーが無いため、引数は text[] で受けて SQL 内で ulid[] にキャスト。
+	ListLikedPostIDsForUserAndPosts(ctx context.Context, arg ListLikedPostIDsForUserAndPostsParams) ([]ulid.ULID, error)
+	// 認証済みユーザーが指定ピアノに付けているリスト種別。
+	ListMyListKindsForPiano(ctx context.Context, arg ListMyListKindsForPianoParams) ([]PianoListKind, error)
+	// 指定ピアノの編集ログを新しい順に。AIP-158: id keyset で次ページ。
+	ListPianoEditsByPiano(ctx context.Context, arg ListPianoEditsByPianoParams) ([]PianoEdit, error)
+	// 指定ピアノの投稿。public のみ (本人投稿は別途 user 経由で見る運用)。
+	// AIP-158: page_token は最後の (create_time, id) を opaque に。MVP は id (ULID) を keyset に使う。
+	ListPianoPostsByPiano(ctx context.Context, arg ListPianoPostsByPianoParams) ([]ListPianoPostsByPianoRow, error)
+	// 指定ユーザーの投稿。include_private = true で private も含める (本人閲覧時)。
+	ListPianoPostsByUser(ctx context.Context, arg ListPianoPostsByUserParams) ([]ListPianoPostsByUserRow, error)
+	// 指定ユーザーの指定 list_kind の piano_id 一覧。create_time 単独で keyset (同点は ULID で安定化)。
+	// page_token は base64 不要、最後の create_time を ISO 文字列で素直に渡す形で十分。MVP は piano_id keyset で済ませる。
+	ListPianoUserListsByUser(ctx context.Context, arg ListPianoUserListsByUserParams) ([]ListPianoUserListsByUserRow, error)
 	// 表示エリア内のアクティブなピアノを返す。GIST(location) の && で bbox 包含判定。
 	ListPianosInBBox(ctx context.Context, arg ListPianosInBBoxParams) ([]ListPianosInBBoxRow, error)
 	// 中心点から半径 radius_m 以内のアクティブなピアノを距離順に返す。
 	ListPianosNearby(ctx context.Context, arg ListPianosNearbyParams) ([]ListPianosNearbyRow, error)
+	// グローバルなタイムライン用。最新の public 投稿。
+	ListPublicPianoPosts(ctx context.Context, arg ListPublicPianoPostsParams) ([]ListPublicPianoPostsRow, error)
 	ListUsersByIDs(ctx context.Context, ids []string) ([]User, error)
-	// COALESCE で「指定されたフィールドだけ更新」を実現。location は別 :exec で更新する (geography 関数のため)。
+	// set_X が true のフィールドだけ更新する (NULL 化も含めて値そのまま反映)。
+	// false のフィールドは既存値を保持。NOT NULL カラム (name / kind / piano_type / piano_brand /
+	// status / availability) は usecase 層で set_X=true のとき値存在を保証する。
+	// location は geography 関数のため別 :exec で更新する。
 	UpdatePiano(ctx context.Context, arg UpdatePianoParams) error
 	UpdatePianoLocation(ctx context.Context, arg UpdatePianoLocationParams) error
+	// set_X が true のフィールドだけ更新する (NULL 化も含めて値そのまま反映)。
+	// false のフィールドは既存値を保持。rating / visit_time / visibility は NOT NULL なので
+	// usecase 層で set_X=true のとき値が必ず存在することを保証する。
+	UpdatePianoPost(ctx context.Context, arg UpdatePianoPostParams) error
 	UpdateUserCustomID(ctx context.Context, arg UpdateUserCustomIDParams) error
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) error
+	UpsertPianoPostLike(ctx context.Context, arg UpsertPianoPostLikeParams) error
+	UpsertPianoUserList(ctx context.Context, arg UpsertPianoUserListParams) error
+	// piano_post 作成時に「行ったことある」リストに UPSERT。冪等。
+	UpsertPianoUserListVisited(ctx context.Context, arg UpsertPianoUserListVisitedParams) error
 }
 
 var _ Querier = (*Queries)(nil)

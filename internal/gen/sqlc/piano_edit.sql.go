@@ -43,3 +43,54 @@ func (q *Queries) CreatePianoEdit(ctx context.Context, arg CreatePianoEditParams
 	)
 	return err
 }
+
+const listPianoEditsByPiano = `-- name: ListPianoEditsByPiano :many
+SELECT
+    id,
+    piano_id,
+    editor_user_id,
+    operation,
+    changes,
+    summary,
+    create_time
+FROM piano_edits
+WHERE piano_id = $1::ulid
+  AND ($2::ulid IS NULL OR id < $2::ulid)
+ORDER BY id DESC
+LIMIT $3::int
+`
+
+type ListPianoEditsByPianoParams struct {
+	PianoID    ulid.ULID  `json:"piano_id"`
+	AfterID    *ulid.ULID `json:"after_id"`
+	LimitCount int32      `json:"limit_count"`
+}
+
+// 指定ピアノの編集ログを新しい順に。AIP-158: id keyset で次ページ。
+func (q *Queries) ListPianoEditsByPiano(ctx context.Context, arg ListPianoEditsByPianoParams) ([]PianoEdit, error) {
+	rows, err := q.db.Query(ctx, listPianoEditsByPiano, arg.PianoID, arg.AfterID, arg.LimitCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PianoEdit{}
+	for rows.Next() {
+		var i PianoEdit
+		if err := rows.Scan(
+			&i.ID,
+			&i.PianoID,
+			&i.EditorUserID,
+			&i.Operation,
+			&i.Changes,
+			&i.Summary,
+			&i.CreateTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

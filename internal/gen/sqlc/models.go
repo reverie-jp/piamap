@@ -779,6 +779,7 @@ type PianoPost struct {
 	AudioUrl          *string         `json:"audio_url"`
 	Visibility        PostVisibility  `json:"visibility"`
 	CommentCount      int32           `json:"comment_count"`
+	LikeCount         int32           `json:"like_count"`
 	CreateTime        time.Time       `json:"create_time"`
 	UpdateTime        time.Time       `json:"update_time"`
 }
@@ -799,6 +800,12 @@ type PianoPostImage struct {
 	Url          string    `json:"url"`
 	DisplayOrder int32     `json:"display_order"`
 	CreateTime   time.Time `json:"create_time"`
+}
+
+type PianoPostLike struct {
+	UserID      ulid.ULID `json:"user_id"`
+	PianoPostID ulid.ULID `json:"piano_post_id"`
+	CreateTime  time.Time `json:"create_time"`
 }
 
 type PianoUserList struct {

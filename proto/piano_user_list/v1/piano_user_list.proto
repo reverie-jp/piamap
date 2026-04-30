@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package piano_user_list.v1;
+
+import "piano/v1/piano.proto";
+
+service PianoUserListService {
+  // 自分のリストにピアノを追加 (UPSERT、冪等)。認証必須。
+  rpc AddPianoToUserList(AddPianoToUserListRequest) returns (AddPianoToUserListResponse) {}
+
+  // 自分のリストからピアノを除外。認証必須。
+  rpc RemovePianoFromUserList(RemovePianoFromUserListRequest) returns (RemovePianoFromUserListResponse) {}
+
+  // ユーザーのリストにあるピアノ一覧 (ゲスト可)。
+  rpc ListUserListPianos(ListUserListPianosRequest) returns (ListUserListPianosResponse) {}
+
+  // 認証済みユーザーが指定ピアノに付けているリスト種別を返す (UI のボタン状態用)。
+  rpc GetMyPianoUserLists(GetMyPianoUserListsRequest) returns (GetMyPianoUserListsResponse) {}
+}
+
+enum PianoListKind {
+  PIANO_LIST_KIND_UNSPECIFIED = 0;
+  PIANO_LIST_KIND_WISHLIST = 1;
+  PIANO_LIST_KIND_VISITED = 2;
+  PIANO_LIST_KIND_FAVORITE = 3;
+}
+
+message AddPianoToUserListRequest {
+  // "pianos/{piano_id}"
+  string parent = 1;
+  PianoListKind list_kind = 2;
+}
+
+message AddPianoToUserListResponse {}
+
+message RemovePianoFromUserListRequest {
+  // "pianos/{piano_id}"
+  string parent = 1;
+  PianoListKind list_kind = 2;
+}
+
+message RemovePianoFromUserListResponse {}
+
+message ListUserListPianosRequest {
+  // "users/{custom_id}"
+  string parent = 1;
+  PianoListKind list_kind = 2;
+  optional int32 page_size = 3;
+  optional string page_token = 4;
+}
+
+message ListUserListPianosResponse {
+  repeated piano.v1.Piano pianos = 1;
+  string next_page_token = 2;
+}
+
+message GetMyPianoUserListsRequest {
+  // "pianos/{piano_id}"
+  string parent = 1;
+}
+
+message GetMyPianoUserListsResponse {
+  repeated PianoListKind list_kinds = 1;
+}

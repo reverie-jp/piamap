@@ -44,6 +44,9 @@ const (
 	// PianoServiceUpdatePianoProcedure is the fully-qualified name of the PianoService's UpdatePiano
 	// RPC.
 	PianoServiceUpdatePianoProcedure = "/piano.v1.PianoService/UpdatePiano"
+	// PianoServiceListPianoEditsProcedure is the fully-qualified name of the PianoService's
+	// ListPianoEdits RPC.
+	PianoServiceListPianoEditsProcedure = "/piano.v1.PianoService/ListPianoEdits"
 )
 
 // PianoServiceClient is a client for the piano.v1.PianoService service.
@@ -56,6 +59,8 @@ type PianoServiceClient interface {
 	CreatePiano(context.Context, *connect.Request[v1.CreatePianoRequest]) (*connect.Response[v1.CreatePianoResponse], error)
 	// ピアノ編集 (認証必須、piano_edits に operation='update' / 'status_change' / 'kind_change' で記録)。
 	UpdatePiano(context.Context, *connect.Request[v1.UpdatePianoRequest]) (*connect.Response[v1.UpdatePianoResponse], error)
+	// ピアノの編集ログ一覧 (ゲスト可)。
+	ListPianoEdits(context.Context, *connect.Request[v1.ListPianoEditsRequest]) (*connect.Response[v1.ListPianoEditsResponse], error)
 }
 
 // NewPianoServiceClient constructs a client for the piano.v1.PianoService service. By default, it
@@ -93,15 +98,22 @@ func NewPianoServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(pianoServiceMethods.ByName("UpdatePiano")),
 			connect.WithClientOptions(opts...),
 		),
+		listPianoEdits: connect.NewClient[v1.ListPianoEditsRequest, v1.ListPianoEditsResponse](
+			httpClient,
+			baseURL+PianoServiceListPianoEditsProcedure,
+			connect.WithSchema(pianoServiceMethods.ByName("ListPianoEdits")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // pianoServiceClient implements PianoServiceClient.
 type pianoServiceClient struct {
-	getPiano     *connect.Client[v1.GetPianoRequest, v1.GetPianoResponse]
-	searchPianos *connect.Client[v1.SearchPianosRequest, v1.SearchPianosResponse]
-	createPiano  *connect.Client[v1.CreatePianoRequest, v1.CreatePianoResponse]
-	updatePiano  *connect.Client[v1.UpdatePianoRequest, v1.UpdatePianoResponse]
+	getPiano       *connect.Client[v1.GetPianoRequest, v1.GetPianoResponse]
+	searchPianos   *connect.Client[v1.SearchPianosRequest, v1.SearchPianosResponse]
+	createPiano    *connect.Client[v1.CreatePianoRequest, v1.CreatePianoResponse]
+	updatePiano    *connect.Client[v1.UpdatePianoRequest, v1.UpdatePianoResponse]
+	listPianoEdits *connect.Client[v1.ListPianoEditsRequest, v1.ListPianoEditsResponse]
 }
 
 // GetPiano calls piano.v1.PianoService.GetPiano.
@@ -124,6 +136,11 @@ func (c *pianoServiceClient) UpdatePiano(ctx context.Context, req *connect.Reque
 	return c.updatePiano.CallUnary(ctx, req)
 }
 
+// ListPianoEdits calls piano.v1.PianoService.ListPianoEdits.
+func (c *pianoServiceClient) ListPianoEdits(ctx context.Context, req *connect.Request[v1.ListPianoEditsRequest]) (*connect.Response[v1.ListPianoEditsResponse], error) {
+	return c.listPianoEdits.CallUnary(ctx, req)
+}
+
 // PianoServiceHandler is an implementation of the piano.v1.PianoService service.
 type PianoServiceHandler interface {
 	// ピアノ詳細取得 (ゲスト可)。
@@ -134,6 +151,8 @@ type PianoServiceHandler interface {
 	CreatePiano(context.Context, *connect.Request[v1.CreatePianoRequest]) (*connect.Response[v1.CreatePianoResponse], error)
 	// ピアノ編集 (認証必須、piano_edits に operation='update' / 'status_change' / 'kind_change' で記録)。
 	UpdatePiano(context.Context, *connect.Request[v1.UpdatePianoRequest]) (*connect.Response[v1.UpdatePianoResponse], error)
+	// ピアノの編集ログ一覧 (ゲスト可)。
+	ListPianoEdits(context.Context, *connect.Request[v1.ListPianoEditsRequest]) (*connect.Response[v1.ListPianoEditsResponse], error)
 }
 
 // NewPianoServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -167,6 +186,12 @@ func NewPianoServiceHandler(svc PianoServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(pianoServiceMethods.ByName("UpdatePiano")),
 		connect.WithHandlerOptions(opts...),
 	)
+	pianoServiceListPianoEditsHandler := connect.NewUnaryHandler(
+		PianoServiceListPianoEditsProcedure,
+		svc.ListPianoEdits,
+		connect.WithSchema(pianoServiceMethods.ByName("ListPianoEdits")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/piano.v1.PianoService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case PianoServiceGetPianoProcedure:
@@ -177,6 +202,8 @@ func NewPianoServiceHandler(svc PianoServiceHandler, opts ...connect.HandlerOpti
 			pianoServiceCreatePianoHandler.ServeHTTP(w, r)
 		case PianoServiceUpdatePianoProcedure:
 			pianoServiceUpdatePianoHandler.ServeHTTP(w, r)
+		case PianoServiceListPianoEditsProcedure:
+			pianoServiceListPianoEditsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -200,4 +227,8 @@ func (UnimplementedPianoServiceHandler) CreatePiano(context.Context, *connect.Re
 
 func (UnimplementedPianoServiceHandler) UpdatePiano(context.Context, *connect.Request[v1.UpdatePianoRequest]) (*connect.Response[v1.UpdatePianoResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("piano.v1.PianoService.UpdatePiano is not implemented"))
+}
+
+func (UnimplementedPianoServiceHandler) ListPianoEdits(context.Context, *connect.Request[v1.ListPianoEditsRequest]) (*connect.Response[v1.ListPianoEditsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("piano.v1.PianoService.ListPianoEdits is not implemented"))
 }
