@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package account.v1;
+
+service AccountService {
+  // ソーシャルログイン (Google ID Token を検証して自前 JWT を発行)。
+  rpc SocialLogin(SocialLoginRequest) returns (SocialLoginResponse) {}
+
+  // アクセストークンの再発行。
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
+
+  // ログアウト (refresh token を失効)。
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {}
+
+  // アカウント削除 (即時物理削除、CASCADE)。
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse) {}
+}
+
+enum AuthProvider {
+  AUTH_PROVIDER_UNSPECIFIED = 0;
+  AUTH_PROVIDER_GOOGLE = 1;
+}
+
+message TokenPair {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message SocialLoginRequest {
+  AuthProvider provider = 1;
+  // OAuth authorization code (Google の redirect で web app が受け取り、サーバーへ渡す)。
+  string code = 2;
+}
+
+message SocialLoginResponse {
+  TokenPair token_pair = 1;
+  // 新規アカウントが作成されたか。
+  bool is_new_account = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  TokenPair token_pair = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {}
+
+message DeleteAccountRequest {
+  // 確認のために自分の custom_id を入力させる。
+  string confirm_custom_id = 1;
+}
+
+message DeleteAccountResponse {}

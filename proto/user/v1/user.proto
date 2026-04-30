@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+service UserService {
+  // 認証済ユーザー自身のプロフィール取得。
+  rpc GetMyUser(GetMyUserRequest) returns (GetMyUserResponse) {}
+
+  // 任意のユーザーのプロフィール取得。
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+
+  // 自分のプロフィール更新 (FieldMask による partial update)。
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {}
+}
+
+// AIP-122: resource name = "users/{custom_id}"
+message User {
+  string name = 1;
+  string custom_id = 2;
+  string display_name = 3;
+
+  optional string biography = 4;
+  optional string avatar_url = 5;
+  optional string hometown = 6;
+  optional int32 piano_started_year = 7;
+  optional int32 years_of_experience = 8;
+
+  // 集計列 (信頼ライン判定にも使う)。
+  int32 post_count = 9;
+  int32 edit_count = 10;
+
+  google.protobuf.Timestamp create_time = 11;
+  google.protobuf.Timestamp update_time = 12;
+  optional google.protobuf.Timestamp custom_id_change_time = 13;
+
+  // 要求元との関係。
+  bool is_me = 14;
+}
+
+message GetMyUserRequest {}
+
+message GetMyUserResponse {
+  User user = 1;
+}
+
+message GetUserRequest {
+  // "users/{custom_id}"
+  string name = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message UpdateUserRequest {
+  User user = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message UpdateUserResponse {
+  User user = 1;
+}

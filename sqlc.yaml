@@ -1,0 +1,44 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "./migrations"
+    queries:
+      - "./internal/modules/account/sql"
+      - "./internal/modules/user/sql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "./internal/gen/sqlc"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_interface: true
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        overrides:
+          - db_type: ulid
+            go_type:
+              import: github.com/reverie-jp/piamap/internal/platform/ulid
+              type: ULID
+          - db_type: ulid
+            go_type:
+              import: github.com/reverie-jp/piamap/internal/platform/ulid
+              type: ULID
+              pointer: true
+            nullable: true
+          - db_type: ulid[]
+            go_type:
+              import: github.com/reverie-jp/piamap/internal/platform/ulid
+              type: ULID
+              slice: true
+          - db_type: timestamptz
+            go_type:
+              import: time
+              type: Time
+          - db_type: timestamptz
+            go_type:
+              import: time
+              type: Time
+              pointer: true
+            nullable: true
+    database:
+      uri: "postgres://piamap:piamap@piamap-db:5432/piamap_db"

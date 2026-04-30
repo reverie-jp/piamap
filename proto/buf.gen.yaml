@@ -1,0 +1,24 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package_prefix
+      module: buf.build/googleapis/googleapis
+  override:
+    - file_option: go_package_prefix
+      value: github.com/reverie-jp/piamap/internal/gen/pb
+plugins:
+  - remote: buf.build/protocolbuffers/go:v1.36.6
+    out: ../internal/gen/pb
+    opt: paths=source_relative
+  - remote: buf.build/connectrpc/go:v1.18.1
+    out: ../internal/gen/pb
+    opt: paths=source_relative
+  - remote: buf.build/bufbuild/es:v1.10.0
+    out: ../web/app/lib/gen
+    opt: target=ts
+  - remote: buf.build/connectrpc/es:v1.6.1
+    out: ../web/app/lib/gen
+    opt: target=ts
+inputs:
+  - directory: .
