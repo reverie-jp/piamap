@@ -1,4 +1,7 @@
 -- drop triggers and functions
+DROP TRIGGER IF EXISTS trg_user_report_received_counter ON reports;
+DROP FUNCTION IF EXISTS user_report_received_counter_sync();
+
 DROP TRIGGER IF EXISTS trg_piano_user_list_counters ON piano_user_lists;
 DROP FUNCTION IF EXISTS piano_user_list_counters_sync();
 
@@ -15,6 +18,8 @@ DROP TRIGGER IF EXISTS trg_piano_posts_aggregates ON piano_posts;
 DROP FUNCTION IF EXISTS piano_post_aggregates_sync();
 
 -- drop tables
+DROP TABLE IF EXISTS user_restrictions;
+DROP TABLE IF EXISTS content_hides;
 DROP TABLE IF EXISTS reports;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS piano_user_lists;
@@ -32,6 +37,8 @@ DROP TABLE IF EXISTS users;
 
 -- drop types
 DROP TYPE IF EXISTS notification_type;
+DROP TYPE IF EXISTS hide_actor;
+DROP TYPE IF EXISTS hide_target_type;
 DROP TYPE IF EXISTS report_reason;
 DROP TYPE IF EXISTS report_status;
 DROP TYPE IF EXISTS report_target_type;

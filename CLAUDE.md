@@ -115,9 +115,32 @@ performances + reviews を統合した「投稿」エンティティ。1訪問 =
 4. レート制限(MVP は in-memory、Phase1d で Redis 化)
 5. 信頼ライン保護: 削除 / 座標を 500m 以上動かす / 名前全文置換 は信頼ユーザーのみ
 6. Watch + 通知(MVP は DB 蓄積 + クライアントポーリング、Phase1d で Redis pub/sub 化)
-7. 通報3件で自動非公開(usecase 層で実装、仕様変更容易)
+7. 通報閾値超過で自動非公開: `content_hides` テーブルに `actor='auto_report_threshold'` で記録(usecase 層で実装)
+   - 閾値は環境変数 `MODERATION_AUTO_HIDE_THRESHOLD`(MVP=5)
+   - ユーザー数規模に応じて引き上げ(〜1k=5 / 〜10k=10 / 〜100k=20)、再デプロイで調整可能
+   - 投稿・コメントの非公開状態は `content_hides` の `revoked_time IS NULL` レコードの存在で判定
+   - admin 手動 hide も同テーブル(`actor='admin'`)。履歴・監査ログ兼用
+   - target_id に FK は無い(polymorphic、`reports` と同パターン)。投稿削除時の orphan は admin が手動で掃除する想定
 
-**信頼ユーザー判定**: `(NOW() - users.create_time) >= 7d AND (post_count + edit_count) >= 3` を Go 側で評価。
+**信頼ユーザー判定**(Plan A + B):
+```
+trusted = (NOW() - users.create_time) >= 30d
+       AND (users.post_count + users.edit_count) >= 10
+       AND users.report_received_count = 0
+```
+- 閾値は捨て垢攻撃のコスト確保のため 30 日 × 10 件
+- `users.report_received_count` は `reports.status='resolved' AND target_type='user'` の件数を トリガで自動同期(reports の INSERT / UPDATE / DELETE すべてに追従)
+- 多段階レベル(スコア式)は将来検討
+
+### ユーザー制裁(凍結・BAN)
+`user_restrictions` テーブルで管理(履歴・監査ログ兼用、`users` 本体には制裁カラムを置かない):
+- `suspended_until = 'infinity'` で永久BAN、未来日で期限付き、`revoked_time` で人為的解除
+- 「現在制限中?」判定: `EXISTS (... WHERE revoked_time IS NULL AND suspended_until > NOW())`
+- App 層で書き込み系 usecase の入口とログイン処理で判定
+- 期限切れは自動復帰(クエリ条件 `> NOW()` で false 化、行は履歴として残る)
+- 同じユーザーへの複数回の制裁は時系列で全件保存(再犯パターン分析に使う)
+- MVP は SQL 直叩きで運用、Phase 2 で admin UI 化
+- 自動制裁(通報5件で auto-suspend 等)は Phase 2 検討
 
 ### ユーザーリスト(行ってみたい/行ったことある/お気に入り)
 `piano_user_lists` 単一テーブル + `list_kind` ENUM。同一 (user, piano) でも `list_kind` が違えば共存可能(複合主キー)。
@@ -125,16 +148,17 @@ performances + reviews を統合した「投稿」エンティティ。1訪問 =
 **visited は `piano_post` 作成 usecase で UPSERT**。投稿削除しても visited マークは残す(行った事実は変わらない)。
 
 ### EXIF strip 必須(プライバシー)
-写真アップロード時の処理:
-1. EXIF を読み取り(訪問日時・GPS は **自動入力の参考に活用**)
-2. ストレージ保存前に **完全削除**
-3. 保存後の写真には EXIF が一切残らない
+**全ての画像アップロード(投稿写真 + アバター)で EXIF を完全削除**。R2 等のストレージに EXIF が残った状態で保存されることは絶対 NG。
+
+- **投稿写真**: EXIF を読み取り(訪問日時・GPS は自動入力候補として活用) → 保存前に完全削除
+- **アバター画像**: EXIF を読まず即削除(自宅位置情報の漏洩リスク回避)
+- 保存後のオブジェクトに EXIF が残らない設計を徹底
 
 ### アバター画像
 初回サインインで Google プロフィール画像 → R2 にコピーして安定 URL 化(`avatar_url`)。設定画面で R2 への独自アップロードで上書き可能。
 
-### handle(@username)
-`users.handle VARCHAR(20) UNIQUE CHECK (handle ~ '^[a-z0-9_]{3,20}$')`。URL 識別子・将来のメンション対象。`handle_change_time` を別途持つ。
+### custom_id(@username 相当)
+`users.custom_id VARCHAR(20) UNIQUE CHECK (custom_id ~ '^[a-z0-9_]{3,20}$')`。URL 識別子・将来のメンション対象。`custom_id_change_time` を別途持つ。reverie の命名に準拠。
 
 ### マップタイル: Protomaps + R2
 日本の OSM データを `planetiler` で `.pmtiles` 化して R2 配信、Cloudflare Worker が z/x/y タイル URL に変換。スケール時もコストはストレージ代(月 $0.075)のみで、Google Maps API のような従量課金で死なない。

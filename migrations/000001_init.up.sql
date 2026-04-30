@@ -9,17 +9,19 @@ CREATE DOMAIN ulid AS TEXT CHECK (LENGTH(VALUE) = 26);
 CREATE TABLE IF NOT EXISTS users (
     id ulid PRIMARY KEY,
     -- @username 相当。URL 識別子・メンション対象。a-z / 0-9 / _ の 3-20 文字
-    handle VARCHAR(20) NOT NULL UNIQUE CHECK (handle ~ '^[a-z0-9_]{3,20}$'),
-    handle_change_time TIMESTAMPTZ,
+    custom_id VARCHAR(20) NOT NULL UNIQUE CHECK (custom_id ~ '^[a-z0-9_]{3,20}$'),
+    custom_id_change_time TIMESTAMPTZ,
     display_name VARCHAR(30) NOT NULL DEFAULT 'unknown',
     biography TEXT,
     avatar_url TEXT,
     hometown VARCHAR(80),
     piano_started_year SMALLINT,
     years_of_experience SMALLINT,
-    -- 信頼ライン判定用の集計列(piano_posts / piano_edits トリガで保守)
+    -- 信頼ライン判定用の集計列(piano_posts / piano_edits / reports トリガで保守)
     post_count INT NOT NULL DEFAULT 0,
     edit_count INT NOT NULL DEFAULT 0,
+    -- 自分が target_type='user' として通報された件数のうち status='resolved' のもの
+    report_received_count INT NOT NULL DEFAULT 0,
     create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     update_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -324,6 +326,65 @@ CREATE INDEX idx_reports_target ON reports(target_type, target_id);
 CREATE INDEX idx_reports_status_create ON reports(status, create_time);
 
 -- ============================================================================
+-- Content Hides (投稿・コメントの自動/手動非公開)
+-- 通報閾値超過(MODERATION_AUTO_HIDE_THRESHOLD、MVPは5)で自動 hide、admin が手動 hide も可能。
+-- 履歴・監査ログ兼用。「現在非公開か?」は EXISTS (... revoked_time IS NULL) で判定。
+-- ============================================================================
+
+CREATE TYPE hide_target_type AS ENUM (
+    'piano_post',
+    'piano_post_comment',
+    'piano_comment'
+);
+
+CREATE TYPE hide_actor AS ENUM ('admin', 'auto_report_threshold');
+
+CREATE TABLE IF NOT EXISTS content_hides (
+    id ulid PRIMARY KEY,
+    target_type hide_target_type NOT NULL,
+    target_id ulid NOT NULL,
+    actor hide_actor NOT NULL,
+    reason TEXT,
+    issued_by_user_id ulid REFERENCES users(id) ON DELETE SET NULL,  -- admin の場合のみセット
+    revoked_time TIMESTAMPTZ,
+    revoked_by_user_id ulid REFERENCES users(id) ON DELETE SET NULL,
+    revoked_reason TEXT,
+    create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_content_hides_target_active
+  ON content_hides(target_type, target_id)
+  WHERE revoked_time IS NULL;
+
+CREATE INDEX idx_content_hides_target_create
+  ON content_hides(target_type, target_id, create_time DESC);
+
+-- ============================================================================
+-- User Restrictions (悪質ユーザーの凍結・BAN)
+-- 履歴と監査ログを兼ねる。1ユーザー複数回の制裁を時系列で残す。
+-- 「現在制限中か?」は revoked_time IS NULL AND suspended_until > NOW() で判定。
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS user_restrictions (
+    id ulid PRIMARY KEY,
+    user_id ulid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    suspended_until TIMESTAMPTZ NOT NULL,                   -- 'infinity' = 永久BAN、未来日 = 期限付き
+    reason TEXT,
+    issued_by_user_id ulid REFERENCES users(id) ON DELETE SET NULL,
+    revoked_time TIMESTAMPTZ,                               -- NULL = 未解除
+    revoked_by_user_id ulid REFERENCES users(id) ON DELETE SET NULL,
+    revoked_reason TEXT,
+    create_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_restrictions_user_active
+  ON user_restrictions(user_id, suspended_until DESC)
+  WHERE revoked_time IS NULL;
+
+CREATE INDEX idx_user_restrictions_user_create
+  ON user_restrictions(user_id, create_time DESC);
+
+-- ============================================================================
 -- Triggers: denormalized aggregates
 -- ============================================================================
 
@@ -479,3 +540,25 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_piano_user_list_counters
 AFTER INSERT OR DELETE ON piano_user_lists
 FOR EACH ROW EXECUTE FUNCTION piano_user_list_counters_sync();
+
+-- users.report_received_count を reports.status='resolved' & target_type='user' の変動に追従
+CREATE FUNCTION user_report_received_counter_sync() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' AND NEW.status = 'resolved' AND NEW.target_type = 'user' THEN
+        UPDATE users SET report_received_count = report_received_count + 1 WHERE id = NEW.target_id;
+    ELSIF TG_OP = 'UPDATE' AND NEW.target_type = 'user' THEN
+        IF OLD.status <> 'resolved' AND NEW.status = 'resolved' THEN
+            UPDATE users SET report_received_count = report_received_count + 1 WHERE id = NEW.target_id;
+        ELSIF OLD.status = 'resolved' AND NEW.status <> 'resolved' THEN
+            UPDATE users SET report_received_count = GREATEST(report_received_count - 1, 0) WHERE id = OLD.target_id;
+        END IF;
+    ELSIF TG_OP = 'DELETE' AND OLD.status = 'resolved' AND OLD.target_type = 'user' THEN
+        UPDATE users SET report_received_count = GREATEST(report_received_count - 1, 0) WHERE id = OLD.target_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_user_report_received_counter
+AFTER INSERT OR UPDATE OR DELETE ON reports
+FOR EACH ROW EXECUTE FUNCTION user_report_received_counter_sync();
