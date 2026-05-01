@@ -41,7 +41,7 @@ export function UserCommentList({ customId, emptyMessage }: Props) {
   if (comments.length === 0) {
     return (
       <p className="rounded-2xl bg-slate-50 p-4 text-center text-sm text-slate-500">
-        {emptyMessage ?? "まだコメントはありません"}
+        {emptyMessage ?? "まだ返信はありません"}
       </p>
     );
   }

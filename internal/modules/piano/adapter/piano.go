@@ -35,6 +35,7 @@ func ToPiano(view *gateway.PianoView) *pianov1.Piano {
 		Availability:           toPbAvailability(p.Availability),
 		AvailabilityNote:       p.AvailabilityNote,
 		PostCount:              p.PostCount,
+		RatingCount:            p.RatingCount,
 		RatingAverage:          p.RatingAverage(),
 		AmbientNoiseAverage:    p.AmbientNoiseAverage(),
 		FootTrafficAverage:     p.FootTrafficAverage(),

@@ -18,7 +18,7 @@ type CreatePianoPostParams struct {
 	UserID         ulid.ULID
 	PianoID        ulid.ULID
 	VisitTime      time.Time
-	Rating         int16
+	Rating         *int16
 	Body           *string
 	AmbientNoise   *int16
 	FootTraffic    *int16

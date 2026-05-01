@@ -75,7 +75,7 @@ export function CreatePianoPostModal({
   useEffect(() => {
     if (!isOpen) return;
     if (editingPost) {
-      setRating(editingPost.rating);
+      setRating(editingPost.rating ?? 0);
       setBody(editingPost.body ?? "");
       setVisitDate(
         editingPost.visitTime
@@ -93,8 +93,14 @@ export function CreatePianoPostModal({
   }, [isOpen, editingPost]);
 
   const handleSubmit = async () => {
-    if (rating < 1 || rating > 5) {
-      setErr("評価を選択してください");
+    const trimmedBody = body.trim();
+    // rating または body のどちらかは必須
+    if (rating === 0 && !trimmedBody) {
+      setErr("評価をつけるか、感想を書いてください");
+      return;
+    }
+    if (rating !== 0 && (rating < 1 || rating > 5)) {
+      setErr("評価が不正です");
       return;
     }
     setSubmitting(true);
@@ -110,11 +116,10 @@ export function CreatePianoPostModal({
         // サーバー側は SetX=true + 値=null を NULL として保存するため、これで完全クリアできる。
         const post = new PianoPost({
           name: editingPost.name,
-          rating,
           visitTime: Timestamp.fromDate(visit),
         });
-        const trimmed = body.trim();
-        if (trimmed) post.body = trimmed;
+        if (rating !== 0) post.rating = rating;
+        if (trimmedBody) post.body = trimmedBody;
         if (attrs.ambientNoise != null) post.ambientNoise = attrs.ambientNoise;
         if (attrs.footTraffic != null) post.footTraffic = attrs.footTraffic;
         if (attrs.resonance != null) post.resonance = attrs.resonance;
@@ -139,9 +144,9 @@ export function CreatePianoPostModal({
         );
       } else {
         const post = new PianoPost({
-          rating,
+          rating: rating !== 0 ? rating : undefined,
           visitTime: Timestamp.fromDate(visit),
-          body: body.trim() || undefined,
+          body: trimmedBody || undefined,
           visibility: PostVisibility.PUBLIC,
           ambientNoise: attrs.ambientNoise,
           footTraffic: attrs.footTraffic,

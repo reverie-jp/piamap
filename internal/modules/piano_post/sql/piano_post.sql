@@ -116,7 +116,7 @@ INSERT INTO piano_posts (
     sqlc.arg(user_id)::ulid,
     sqlc.arg(piano_id)::ulid,
     sqlc.arg(visit_time)::timestamptz,
-    sqlc.arg(rating)::smallint,
+    sqlc.narg(rating)::smallint,
     sqlc.narg(body),
     sqlc.narg(ambient_noise)::smallint,
     sqlc.narg(foot_traffic)::smallint,

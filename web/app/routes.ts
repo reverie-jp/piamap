@@ -16,5 +16,6 @@ export default [
   route("pianos/:id", "routes/piano-detail.tsx"),
   route("pianos/:id/posts/:postId", "routes/piano-post-detail.tsx"),
   route("profile/:customId", "routes/profile-other.tsx"),
+  route("profile/:customId/saved/:kind", "routes/saved-list.tsx"),
   route("settings", "routes/settings.tsx"),
 ] satisfies RouteConfig;

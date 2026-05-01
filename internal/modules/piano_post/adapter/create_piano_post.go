@@ -37,7 +37,7 @@ func FromCreatePianoPostRequest(ctx context.Context, req *connect.Request[piano_
 		RequesterID: requesterID,
 		PianoID:     pianoID,
 		VisitTime:   post.GetVisitTime().AsTime(),
-		Rating:      int16(post.GetRating()),
+		Rating:      optInt16(post.Rating),
 		Body:        post.Body,
 		Visibility:  fromPbVisibility(post.GetVisibility()),
 	}

@@ -58,11 +58,11 @@ export class PianoPost extends Message<PianoPost> {
   visitTime?: Timestamp;
 
   /**
-   * 1..5 必須。
+   * 1..5 任意 (rating または body のどちらかは必須)。
    *
-   * @generated from field: int32 rating = 4;
+   * @generated from field: optional int32 rating = 4;
    */
-  rating = 0;
+  rating?: number;
 
   /**
    * @generated from field: optional string body = 5;
@@ -160,7 +160,7 @@ export class PianoPost extends Message<PianoPost> {
     { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "visit_time", kind: "message", T: Timestamp },
-    { no: 4, name: "rating", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 4, name: "rating", kind: "scalar", T: 5 /* ScalarType.INT32 */, opt: true },
     { no: 5, name: "body", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
     { no: 6, name: "ambient_noise", kind: "scalar", T: 5 /* ScalarType.INT32 */, opt: true },
     { no: 7, name: "foot_traffic", kind: "scalar", T: 5 /* ScalarType.INT32 */, opt: true },

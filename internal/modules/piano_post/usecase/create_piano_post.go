@@ -18,7 +18,7 @@ type CreatePianoPostInput struct {
 	RequesterID    ulid.ULID
 	PianoID        ulid.ULID
 	VisitTime      time.Time
-	Rating         int16
+	Rating         *int16
 	Body           *string
 	AmbientNoise   *int16
 	FootTraffic    *int16
@@ -35,8 +35,13 @@ func (i CreatePianoPostInput) Validate() error {
 	if i.PianoID.IsZero() {
 		return xerrors.ErrInvalidArgument.WithMessage("piano id is required")
 	}
-	if i.Rating < 1 || i.Rating > 5 {
+	if i.Rating != nil && (*i.Rating < 1 || *i.Rating > 5) {
 		return xerrors.ErrInvalidArgument.WithMessage("rating must be 1..5")
+	}
+	// rating または body のどちらかは必須。
+	hasBody := i.Body != nil && len(*i.Body) > 0
+	if i.Rating == nil && !hasBody {
+		return xerrors.ErrInvalidArgument.WithMessage("rating or body is required")
 	}
 	if i.VisitTime.IsZero() {
 		return xerrors.ErrInvalidArgument.WithMessage("visit_time is required")

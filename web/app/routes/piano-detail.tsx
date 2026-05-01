@@ -120,7 +120,7 @@ export default function PianoDetail() {
 
   const handleReviewPress = () => {
     if (!authed) {
-      setSignUpAction("レビュー投稿");
+      setSignUpAction("投稿");
       setSignUpOpen(true);
       return;
     }
@@ -346,15 +346,15 @@ export default function PianoDetail() {
           </dl>
 
           <div className="flex items-center justify-between pt-2">
-            <h2 className="text-sm font-bold text-slate-900">レビュー ({posts.length})</h2>
+            <h2 className="text-sm font-bold text-slate-900">投稿 ({posts.length})</h2>
             <Button size="sm" onPress={handleReviewPress}>
               <MessageSquarePlus size={16} aria-hidden />
-              レビュー
+              投稿
             </Button>
           </div>
           {posts.length === 0 ? (
             <p className="rounded-2xl bg-slate-50 p-4 text-center text-sm text-slate-500">
-              まだレビューがありません。最初の1件を投稿しよう。
+              まだ投稿がありません。最初の1件を投稿しよう。
             </p>
           ) : (
             <ul className="space-y-3">
@@ -401,7 +401,7 @@ export default function PianoDetail() {
         onOpenChange={(open) => {
           if (!open) setDeletingPost(null);
         }}
-        title="レビューを削除"
+        title="投稿を削除"
         message="この操作は取り消せません。本当に削除しますか?"
         confirmLabel="削除する"
         destructive
@@ -471,10 +471,10 @@ function ListToggleButton({
 }
 
 function RatingBlock({ piano }: { piano: Piano }) {
-  if (piano.postCount === 0) {
+  if (piano.ratingCount === 0) {
     return (
       <div className="rounded-2xl bg-slate-50 p-4 text-center text-sm text-slate-500">
-        まだレビューがありません
+        まだ評価がついていません
       </div>
     );
   }
@@ -483,7 +483,7 @@ function RatingBlock({ piano }: { piano: Piano }) {
       <Star size={28} className="fill-amber-500 text-amber-500" />
       <div>
         <span className="text-2xl font-bold text-amber-700">{piano.ratingAverage.toFixed(1)}</span>
-        <span className="ml-2 text-xs text-slate-600">({piano.postCount}件のレビュー)</span>
+        <span className="ml-2 text-xs text-slate-600">({piano.ratingCount}件の評価)</span>
       </div>
     </div>
   );

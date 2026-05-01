@@ -434,8 +434,10 @@ type Piano struct {
 	Creator string `protobuf:"bytes,20,opt,name=creator,proto3" json:"creator,omitempty"`
 	// 集計
 	PostCount int32 `protobuf:"varint,21,opt,name=post_count,json=postCount,proto3" json:"post_count,omitempty"`
-	// 平均評価 (post_count = 0 のときは 0.0、UI 側で「未評価」表示)。
+	// 平均評価 (rating_count = 0 のときは 0.0、UI 側で「未評価」表示)。
 	RatingAverage float64 `protobuf:"fixed64,22,opt,name=rating_average,json=ratingAverage,proto3" json:"rating_average,omitempty"`
+	// rating が付いた投稿数 (rating_average の母数)。
+	RatingCount int32 `protobuf:"varint,34,opt,name=rating_count,json=ratingCount,proto3" json:"rating_count,omitempty"`
 	// 5 環境属性の平均 (count = 0 のとき 0)。
 	AmbientNoiseAverage   float64 `protobuf:"fixed64,23,opt,name=ambient_noise_average,json=ambientNoiseAverage,proto3" json:"ambient_noise_average,omitempty"`
 	FootTrafficAverage    float64 `protobuf:"fixed64,24,opt,name=foot_traffic_average,json=footTrafficAverage,proto3" json:"foot_traffic_average,omitempty"`
@@ -634,6 +636,13 @@ func (x *Piano) GetPostCount() int32 {
 func (x *Piano) GetRatingAverage() float64 {
 	if x != nil {
 		return x.RatingAverage
+	}
+	return 0
+}
+
+func (x *Piano) GetRatingCount() int32 {
+	if x != nil {
+		return x.RatingCount
 	}
 	return 0
 }
@@ -1421,7 +1430,7 @@ const file_piano_v1_piano_proto_rawDesc = "" +
 	"\tlongitude\x18\x02 \x01(\x01R\tlongitude\"n\n" +
 	"\fLatLngBounds\x12.\n" +
 	"\tsouthwest\x18\x01 \x01(\v2\x10.piano.v1.LatLngR\tsouthwest\x12.\n" +
-	"\tnortheast\x18\x02 \x01(\v2\x10.piano.v1.LatLngR\tnortheast\"\xd6\f\n" +
+	"\tnortheast\x18\x02 \x01(\v2\x10.piano.v1.LatLngR\tnortheast\"\xf9\f\n" +
 	"\x05Piano\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12%\n" +
@@ -1454,7 +1463,8 @@ const file_piano_v1_piano_proto_rawDesc = "" +
 	"\acreator\x18\x14 \x01(\tR\acreator\x12\x1d\n" +
 	"\n" +
 	"post_count\x18\x15 \x01(\x05R\tpostCount\x12%\n" +
-	"\x0erating_average\x18\x16 \x01(\x01R\rratingAverage\x122\n" +
+	"\x0erating_average\x18\x16 \x01(\x01R\rratingAverage\x12!\n" +
+	"\frating_count\x18\" \x01(\x05R\vratingCount\x122\n" +
 	"\x15ambient_noise_average\x18\x17 \x01(\x01R\x13ambientNoiseAverage\x120\n" +
 	"\x14foot_traffic_average\x18\x18 \x01(\x01R\x12footTrafficAverage\x12+\n" +
 	"\x11resonance_average\x18\x19 \x01(\x01R\x10resonanceAverage\x127\n" +

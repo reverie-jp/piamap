@@ -7,11 +7,10 @@ import { ConfirmDialog } from "../components/ConfirmDialog";
 import { CreatePianoPostModal } from "../components/CreatePianoPostModal";
 import { LikedPianoPostList } from "../components/LikedPianoPostList";
 import { PianoPostCard } from "../components/PianoPostCard";
+import { SavedListsCards } from "../components/SavedListsCards";
 import { SignUpPromptModal } from "../components/SignUpPromptModal";
 import { Tabs } from "../components/Tabs";
 import { UserCommentList } from "../components/UserCommentList";
-import { UserPianoList } from "../components/UserPianoList";
-import { PianoListKind } from "../lib/gen/piano_user_list/v1/piano_user_list_pb";
 import { pianoPostClient, userClient } from "../lib/api-client";
 import { useAuth } from "../lib/auth";
 import {
@@ -28,7 +27,7 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: "プロフィール — PiaMap" }];
 }
 
-type ProfileTab = "posts" | "wishlist" | "visited" | "favorite" | "liked" | "comments";
+type ProfileTab = "posts" | "liked" | "comments" | "saved";
 
 export default function ProfileMe() {
   const { authed } = useAuth();
@@ -134,10 +133,8 @@ export default function ProfileMe() {
               tabs={[
                 { id: "posts", label: "投稿" },
                 { id: "liked", label: "いいね" },
-                { id: "comments", label: "コメント" },
-                { id: "wishlist", label: "行ってみたい" },
-                { id: "visited", label: "行ったことある" },
-                { id: "favorite", label: "お気に入り" },
+                { id: "comments", label: "返信" },
+                { id: "saved", label: "保存済み" },
               ]}
               active={tab}
               onChange={setTab}
@@ -169,24 +166,8 @@ export default function ProfileMe() {
                 <LikedPianoPostList customId={me.customId} currentUserCustomId={me.customId} />
               ) : tab === "comments" ? (
                 <UserCommentList customId={me.customId} />
-              ) : tab === "wishlist" ? (
-                <UserPianoList
-                  customId={me.customId}
-                  listKind={PianoListKind.WISHLIST}
-                  emptyMessage="行ってみたいピアノはまだありません"
-                />
-              ) : tab === "visited" ? (
-                <UserPianoList
-                  customId={me.customId}
-                  listKind={PianoListKind.VISITED}
-                  emptyMessage="行ったピアノはまだありません"
-                />
               ) : (
-                <UserPianoList
-                  customId={me.customId}
-                  listKind={PianoListKind.FAVORITE}
-                  emptyMessage="お気に入りに登録したピアノはまだありません"
-                />
+                <SavedListsCards customId={me.customId} />
               )}
             </div>
           </section>
@@ -213,7 +194,7 @@ export default function ProfileMe() {
         onOpenChange={(open) => {
           if (!open) setDeletingPost(null);
         }}
-        title="レビューを削除"
+        title="投稿を削除"
         message="この操作は取り消せません。本当に削除しますか?"
         confirmLabel="削除する"
         destructive
@@ -237,7 +218,7 @@ function SignedOutPrompt() {
     <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
       <UserRound size={48} className="mb-4 text-slate-300" />
       <p className="text-sm text-slate-600">プロフィールを表示するにはログインが必要です。</p>
-      <div className="mt-5 w-full max-w-[260px] space-y-2">
+      <div className="mt-5 w-full max-w-65 space-y-2">
         <Button size="lg" className="w-full" onPress={() => setOpen(true)}>
           <LogIn size={16} /> ログインする
         </Button>

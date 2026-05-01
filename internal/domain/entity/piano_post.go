@@ -13,13 +13,13 @@ const (
 	PostVisibilityPrivate PostVisibility = "private"
 )
 
-// PianoPost は 1 訪問 = 1 投稿。rating 必須、5 環境属性は任意。
+// PianoPost は 1 訪問 = 1 投稿。rating または body のどちらかは必須、5 環境属性は任意。
 type PianoPost struct {
 	ID             ulid.ULID
 	UserID         ulid.ULID
 	PianoID        ulid.ULID
 	VisitTime      time.Time
-	Rating         int16
+	Rating         *int16
 	Body           *string
 	AmbientNoise   *int16
 	FootTraffic    *int16

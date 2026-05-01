@@ -712,6 +712,7 @@ type Piano struct {
 	RemoveTime          *time.Time        `json:"remove_time"`
 	CreatorUserID       *ulid.ULID        `json:"creator_user_id"`
 	PostCount           int32             `json:"post_count"`
+	RatingCount         int32             `json:"rating_count"`
 	RatingSum           int32             `json:"rating_sum"`
 	AmbientNoiseCount   int32             `json:"ambient_noise_count"`
 	AmbientNoiseSum     int32             `json:"ambient_noise_sum"`
@@ -728,16 +729,6 @@ type Piano struct {
 	FavoriteCount       int32             `json:"favorite_count"`
 	CreateTime          time.Time         `json:"create_time"`
 	UpdateTime          time.Time         `json:"update_time"`
-}
-
-type PianoComment struct {
-	ID              ulid.ULID  `json:"id"`
-	PianoID         ulid.ULID  `json:"piano_id"`
-	UserID          ulid.ULID  `json:"user_id"`
-	ParentCommentID *ulid.ULID `json:"parent_comment_id"`
-	Body            string     `json:"body"`
-	CreateTime      time.Time  `json:"create_time"`
-	UpdateTime      time.Time  `json:"update_time"`
 }
 
 type PianoEdit struct {
@@ -765,7 +756,7 @@ type PianoPost struct {
 	UserID            ulid.ULID       `json:"user_id"`
 	PianoID           ulid.ULID       `json:"piano_id"`
 	VisitTime         time.Time       `json:"visit_time"`
-	Rating            int16           `json:"rating"`
+	Rating            *int16          `json:"rating"`
 	Body              *string         `json:"body"`
 	AmbientNoise      *int16          `json:"ambient_noise"`
 	FootTraffic       *int16          `json:"foot_traffic"`

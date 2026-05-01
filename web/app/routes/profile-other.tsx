@@ -5,10 +5,10 @@ import { ArrowLeft, UserRound } from "lucide-react";
 import { MobileShell } from "../components/MobileShell";
 import { LikedPianoPostList } from "../components/LikedPianoPostList";
 import { PianoPostCard } from "../components/PianoPostCard";
+import { SavedListsCards } from "../components/SavedListsCards";
 import { SignUpPromptModal } from "../components/SignUpPromptModal";
 import { Tabs } from "../components/Tabs";
 import { UserCommentList } from "../components/UserCommentList";
-import { UserPianoList } from "../components/UserPianoList";
 import { useAuth } from "../lib/auth";
 import { useMe } from "../lib/use-me";
 import { pianoPostClient, userClient } from "../lib/api-client";
@@ -17,7 +17,6 @@ import {
   ListPianoPostsRequest,
   type PianoPost,
 } from "../lib/gen/piano_post/v1/piano_post_pb";
-import { PianoListKind } from "../lib/gen/piano_user_list/v1/piano_user_list_pb";
 import { formatUser } from "../lib/resource-name";
 
 import type { Route } from "./+types/profile-other";
@@ -26,7 +25,7 @@ export function meta({ params }: Route.MetaArgs) {
   return [{ title: `@${params.customId} — PiaMap` }];
 }
 
-type ProfileTab = "posts" | "wishlist" | "visited" | "favorite" | "liked" | "comments";
+type ProfileTab = "posts" | "liked" | "comments" | "saved";
 
 export default function ProfileOther() {
   const { authed } = useAuth();
@@ -107,10 +106,8 @@ export default function ProfileOther() {
               tabs={[
                 { id: "posts", label: "投稿" },
                 { id: "liked", label: "いいね" },
-                { id: "comments", label: "コメント" },
-                { id: "wishlist", label: "行ってみたい" },
-                { id: "visited", label: "行ったことある" },
-                { id: "favorite", label: "お気に入り" },
+                { id: "comments", label: "返信" },
+                { id: "saved", label: "保存済み" },
               ]}
               active={tab}
               onChange={setTab}
@@ -144,24 +141,8 @@ export default function ProfileOther() {
                 />
               ) : tab === "comments" ? (
                 <UserCommentList customId={customId ?? ""} />
-              ) : tab === "wishlist" ? (
-                <UserPianoList
-                  customId={customId ?? ""}
-                  listKind={PianoListKind.WISHLIST}
-                  emptyMessage="行ってみたいピアノはまだありません"
-                />
-              ) : tab === "visited" ? (
-                <UserPianoList
-                  customId={customId ?? ""}
-                  listKind={PianoListKind.VISITED}
-                  emptyMessage="行ったピアノはまだありません"
-                />
               ) : (
-                <UserPianoList
-                  customId={customId ?? ""}
-                  listKind={PianoListKind.FAVORITE}
-                  emptyMessage="お気に入りはまだありません"
-                />
+                <SavedListsCards customId={customId ?? ""} />
               )}
             </div>
           </section>

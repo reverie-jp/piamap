@@ -22,6 +22,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -67,6 +68,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -98,7 +100,7 @@ WHERE status = 'active'
   AND (sqlc.narg(piano_brand)::text IS NULL OR piano_brand ILIKE sqlc.narg(piano_brand)::text)
   AND (
       sqlc.narg(min_rating_average)::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= sqlc.narg(min_rating_average)::float8)
+      OR (rating_count > 0 AND rating_sum::float8 / rating_count >= sqlc.narg(min_rating_average)::float8)
   )
   AND (
       sqlc.narg(min_ambient_noise_average)::float8 IS NULL
@@ -149,6 +151,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -174,7 +177,7 @@ WHERE status = 'active'
   AND (sqlc.narg(piano_brand)::text IS NULL OR piano_brand ILIKE sqlc.narg(piano_brand)::text)
   AND (
       sqlc.narg(min_rating_average)::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= sqlc.narg(min_rating_average)::float8)
+      OR (rating_count > 0 AND rating_sum::float8 / rating_count >= sqlc.narg(min_rating_average)::float8)
   )
   AND (
       sqlc.narg(min_ambient_noise_average)::float8 IS NULL
@@ -224,6 +227,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -262,7 +266,7 @@ WHERE status = 'active'
   AND (sqlc.narg(piano_brand)::text IS NULL OR piano_brand ILIKE sqlc.narg(piano_brand)::text)
   AND (
       sqlc.narg(min_rating_average)::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= sqlc.narg(min_rating_average)::float8)
+      OR (rating_count > 0 AND rating_sum::float8 / rating_count >= sqlc.narg(min_rating_average)::float8)
   )
   AND (
       sqlc.narg(min_ambient_noise_average)::float8 IS NULL

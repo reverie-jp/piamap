@@ -72,6 +72,7 @@ type Piano struct {
 	CreatorUserID    *ulid.ULID
 
 	PostCount           int32
+	RatingCount         int32
 	RatingSum           int32
 	AmbientNoiseCount   int32
 	AmbientNoiseSum     int32
@@ -95,12 +96,12 @@ type Piano struct {
 	DistanceM float64
 }
 
-// RatingAverage: post_count = 0 の場合は 0 を返す (UI 側で「未評価」表示)。
+// RatingAverage: rating_count = 0 の場合は 0 を返す (UI 側で「未評価」表示)。
 func (p *Piano) RatingAverage() float64 {
-	if p == nil || p.PostCount == 0 {
+	if p == nil || p.RatingCount == 0 {
 		return 0
 	}
-	return float64(p.RatingSum) / float64(p.PostCount)
+	return float64(p.RatingSum) / float64(p.RatingCount)
 }
 
 func avg(sum, count int32) float64 {

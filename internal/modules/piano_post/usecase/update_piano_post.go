@@ -17,7 +17,7 @@ type UpdatePianoPostInput struct {
 	SetVisitTime      bool
 	VisitTime         time.Time
 	SetRating         bool
-	Rating            int16
+	Rating            *int16
 	SetBody           bool
 	Body              *string
 	SetAmbientNoise   bool
@@ -41,8 +41,8 @@ func (i UpdatePianoPostInput) Validate() error {
 	if i.PostID.IsZero() {
 		return xerrors.ErrInvalidArgument.WithMessage("post id is required")
 	}
-	// NOT NULL カラム (rating / visit_time / visibility) は SetX=true のとき値必須。
-	if i.SetRating && (i.Rating < 1 || i.Rating > 5) {
+	// rating は optional になったので nil で NULL クリア。1..5 の範囲チェックのみ。
+	if i.SetRating && i.Rating != nil && (*i.Rating < 1 || *i.Rating > 5) {
 		return xerrors.ErrInvalidArgument.WithMessage("rating must be 1..5")
 	}
 	if i.SetVisitTime {
@@ -135,8 +135,7 @@ func (uc *UpdatePianoPost) Execute(ctx context.Context, input UpdatePianoPostInp
 		params.VisitTime = &v
 	}
 	if input.SetRating {
-		v := input.Rating
-		params.Rating = &v
+		params.Rating = input.Rating
 	}
 	if input.SetBody {
 		params.Body = input.Body

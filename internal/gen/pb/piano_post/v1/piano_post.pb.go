@@ -80,8 +80,8 @@ type PianoPost struct {
 	Author string `protobuf:"bytes,2,opt,name=author,proto3" json:"author,omitempty"`
 	// 訪問日時 (作成時必須)。
 	VisitTime *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=visit_time,json=visitTime,proto3" json:"visit_time,omitempty"`
-	// 1..5 必須。
-	Rating int32   `protobuf:"varint,4,opt,name=rating,proto3" json:"rating,omitempty"`
+	// 1..5 任意 (rating または body のどちらかは必須)。
+	Rating *int32  `protobuf:"varint,4,opt,name=rating,proto3,oneof" json:"rating,omitempty"`
 	Body   *string `protobuf:"bytes,5,opt,name=body,proto3,oneof" json:"body,omitempty"`
 	// 5 環境属性 (任意、特徴メーター用)。
 	AmbientNoise   *int32                 `protobuf:"varint,6,opt,name=ambient_noise,json=ambientNoise,proto3,oneof" json:"ambient_noise,omitempty"`
@@ -157,8 +157,8 @@ func (x *PianoPost) GetVisitTime() *timestamppb.Timestamp {
 }
 
 func (x *PianoPost) GetRating() int32 {
-	if x != nil {
-		return x.Rating
+	if x != nil && x.Rating != nil {
+		return *x.Rating
 	}
 	return 0
 }
@@ -748,20 +748,20 @@ var File_piano_post_v1_piano_post_proto protoreflect.FileDescriptor
 
 const file_piano_post_v1_piano_post_proto_rawDesc = "" +
 	"\n" +
-	"\x1epiano_post/v1/piano_post.proto\x12\rpiano_post.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf2\x06\n" +
+	"\x1epiano_post/v1/piano_post.proto\x12\rpiano_post.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x82\a\n" +
 	"\tPianoPost\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
 	"\x06author\x18\x02 \x01(\tR\x06author\x129\n" +
 	"\n" +
-	"visit_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tvisitTime\x12\x16\n" +
-	"\x06rating\x18\x04 \x01(\x05R\x06rating\x12\x17\n" +
-	"\x04body\x18\x05 \x01(\tH\x00R\x04body\x88\x01\x01\x12(\n" +
-	"\rambient_noise\x18\x06 \x01(\x05H\x01R\fambientNoise\x88\x01\x01\x12&\n" +
-	"\ffoot_traffic\x18\a \x01(\x05H\x02R\vfootTraffic\x88\x01\x01\x12!\n" +
-	"\tresonance\x18\b \x01(\x05H\x03R\tresonance\x88\x01\x01\x12-\n" +
-	"\x10key_touch_weight\x18\t \x01(\x05H\x04R\x0ekeyTouchWeight\x88\x01\x01\x12*\n" +
+	"visit_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tvisitTime\x12\x1b\n" +
+	"\x06rating\x18\x04 \x01(\x05H\x00R\x06rating\x88\x01\x01\x12\x17\n" +
+	"\x04body\x18\x05 \x01(\tH\x01R\x04body\x88\x01\x01\x12(\n" +
+	"\rambient_noise\x18\x06 \x01(\x05H\x02R\fambientNoise\x88\x01\x01\x12&\n" +
+	"\ffoot_traffic\x18\a \x01(\x05H\x03R\vfootTraffic\x88\x01\x01\x12!\n" +
+	"\tresonance\x18\b \x01(\x05H\x04R\tresonance\x88\x01\x01\x12-\n" +
+	"\x10key_touch_weight\x18\t \x01(\x05H\x05R\x0ekeyTouchWeight\x88\x01\x01\x12*\n" +
 	"\x0etuning_quality\x18\n" +
-	" \x01(\x05H\x05R\rtuningQuality\x88\x01\x01\x12=\n" +
+	" \x01(\x05H\x06R\rtuningQuality\x88\x01\x01\x12=\n" +
 	"\n" +
 	"visibility\x18\v \x01(\x0e2\x1d.piano_post.v1.PostVisibilityR\n" +
 	"visibility\x12#\n" +
@@ -776,7 +776,8 @@ const file_piano_post_v1_piano_post_proto_rawDesc = "" +
 	"\x12piano_display_name\x18\x11 \x01(\tR\x10pianoDisplayName\x12\x1d\n" +
 	"\n" +
 	"like_count\x18\x12 \x01(\x05R\tlikeCount\x12!\n" +
-	"\fviewer_liked\x18\x13 \x01(\bR\vviewerLikedB\a\n" +
+	"\fviewer_liked\x18\x13 \x01(\bR\vviewerLikedB\t\n" +
+	"\a_ratingB\a\n" +
 	"\x05_bodyB\x10\n" +
 	"\x0e_ambient_noiseB\x0f\n" +
 	"\r_foot_trafficB\f\n" +

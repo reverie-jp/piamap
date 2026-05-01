@@ -96,10 +96,12 @@ CREATE TABLE IF NOT EXISTS pianos (
     remove_time TIMESTAMPTZ,
     creator_user_id ulid REFERENCES users(id) ON DELETE SET NULL,
     -- 集計列(piano_posts トリガで保守)
-    --   post_count: 総投稿数 = rating付き投稿数(rating は必須なので両者は同一)
-    --   平均評価は rating_sum / NULLIF(post_count, 0)
+    --   post_count: 総投稿数 (rating の有無に関係なく)
+    --   rating_count: rating が付いた投稿数 (平均評価の母数)
+    --   平均評価は rating_sum / NULLIF(rating_count, 0)
     --   5属性は任意なので null-aware で個別に count/sum を保守
     post_count INT NOT NULL DEFAULT 0,
+    rating_count INT NOT NULL DEFAULT 0,
     rating_sum INT NOT NULL DEFAULT 0,
     ambient_noise_count INT NOT NULL DEFAULT 0,
     ambient_noise_sum INT NOT NULL DEFAULT 0,
@@ -151,8 +153,8 @@ CREATE TABLE IF NOT EXISTS piano_posts (
     user_id ulid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     piano_id ulid NOT NULL REFERENCES pianos(id) ON DELETE CASCADE,
     visit_time TIMESTAMPTZ NOT NULL,
-    -- rating は必須(Google Maps 口コミ仕様)。最小投稿は rating だけでも可
-    rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    -- rating または body のどちらかは必須 (アプリ層でバリデーション)
+    rating SMALLINT CHECK (rating BETWEEN 1 AND 5),
     body TEXT,
     -- 環境・楽器属性(任意、ピアノの「特徴メーター」表示用、評価には独立して集計される)
     ambient_noise SMALLINT CHECK (ambient_noise BETWEEN 1 AND 5),
@@ -216,19 +218,6 @@ CREATE TABLE IF NOT EXISTS piano_post_comments (
 
 CREATE INDEX idx_piano_post_comments_post ON piano_post_comments(piano_post_id, create_time);
 CREATE INDEX idx_piano_post_comments_user ON piano_post_comments(user_id, create_time DESC);
-
-CREATE TABLE IF NOT EXISTS piano_comments (
-    id ulid PRIMARY KEY,
-    piano_id ulid NOT NULL REFERENCES pianos(id) ON DELETE CASCADE,
-    user_id ulid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    parent_comment_id ulid REFERENCES piano_comments(id) ON DELETE CASCADE,
-    body TEXT NOT NULL,
-    create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    update_time TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_piano_comments_piano ON piano_comments(piano_id, create_time);
-CREATE INDEX idx_piano_comments_user ON piano_comments(user_id, create_time DESC);
 
 -- ============================================================================
 -- Piano Edits (公開編集ログ + Watch + 通知)
@@ -402,14 +391,15 @@ CREATE INDEX idx_user_restrictions_user_create
 -- ============================================================================
 
 -- piano_posts の変動を pianos の集計列に反映する。
--- rating は必須なので post_count == rating の母数。5属性は任意なので null-aware。
+-- rating / 5 属性 はすべて任意なので null-aware で count + sum を保守する。
 -- 集計は visibility に関わらず全件対象(private 投稿も数値だけはピアノに反映)。
 CREATE FUNCTION piano_post_aggregates_sync() RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         UPDATE pianos SET
             post_count = post_count + 1,
-            rating_sum = rating_sum + NEW.rating,
+            rating_count = rating_count + (NEW.rating IS NOT NULL)::INT,
+            rating_sum = rating_sum + COALESCE(NEW.rating, 0),
             ambient_noise_count = ambient_noise_count + (NEW.ambient_noise IS NOT NULL)::INT,
             ambient_noise_sum = ambient_noise_sum + COALESCE(NEW.ambient_noise, 0),
             foot_traffic_count = foot_traffic_count + (NEW.foot_traffic IS NOT NULL)::INT,
@@ -424,7 +414,8 @@ BEGIN
     ELSIF TG_OP = 'DELETE' THEN
         UPDATE pianos SET
             post_count = GREATEST(post_count - 1, 0),
-            rating_sum = GREATEST(rating_sum - OLD.rating, 0),
+            rating_count = GREATEST(rating_count - (OLD.rating IS NOT NULL)::INT, 0),
+            rating_sum = GREATEST(rating_sum - COALESCE(OLD.rating, 0), 0),
             ambient_noise_count = GREATEST(ambient_noise_count - (OLD.ambient_noise IS NOT NULL)::INT, 0),
             ambient_noise_sum = GREATEST(ambient_noise_sum - COALESCE(OLD.ambient_noise, 0), 0),
             foot_traffic_count = GREATEST(foot_traffic_count - (OLD.foot_traffic IS NOT NULL)::INT, 0),
@@ -438,7 +429,12 @@ BEGIN
             WHERE id = OLD.piano_id;
     ELSIF TG_OP = 'UPDATE' THEN
         UPDATE pianos SET
-            rating_sum = rating_sum + (NEW.rating - OLD.rating),
+            rating_count = rating_count
+                + (NEW.rating IS NOT NULL)::INT
+                - (OLD.rating IS NOT NULL)::INT,
+            rating_sum = rating_sum
+                + COALESCE(NEW.rating, 0)
+                - COALESCE(OLD.rating, 0),
             ambient_noise_count = ambient_noise_count
                 + (NEW.ambient_noise IS NOT NULL)::INT
                 - (OLD.ambient_noise IS NOT NULL)::INT,

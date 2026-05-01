@@ -47,7 +47,7 @@ type CreatePianoPostParams struct {
 	UserID         ulid.ULID      `json:"user_id"`
 	PianoID        ulid.ULID      `json:"piano_id"`
 	VisitTime      time.Time      `json:"visit_time"`
-	Rating         int16          `json:"rating"`
+	Rating         *int16         `json:"rating"`
 	Body           *string        `json:"body"`
 	AmbientNoise   *int16         `json:"ambient_noise"`
 	FootTraffic    *int16         `json:"foot_traffic"`
@@ -111,7 +111,7 @@ type GetPianoPostByIDRow struct {
 	UserID         ulid.ULID      `json:"user_id"`
 	PianoID        ulid.ULID      `json:"piano_id"`
 	VisitTime      time.Time      `json:"visit_time"`
-	Rating         int16          `json:"rating"`
+	Rating         *int16         `json:"rating"`
 	Body           *string        `json:"body"`
 	AmbientNoise   *int16         `json:"ambient_noise"`
 	FootTraffic    *int16         `json:"foot_traffic"`
@@ -186,7 +186,7 @@ type ListPianoPostsByPianoRow struct {
 	UserID         ulid.ULID      `json:"user_id"`
 	PianoID        ulid.ULID      `json:"piano_id"`
 	VisitTime      time.Time      `json:"visit_time"`
-	Rating         int16          `json:"rating"`
+	Rating         *int16         `json:"rating"`
 	Body           *string        `json:"body"`
 	AmbientNoise   *int16         `json:"ambient_noise"`
 	FootTraffic    *int16         `json:"foot_traffic"`
@@ -277,7 +277,7 @@ type ListPianoPostsByUserRow struct {
 	UserID         ulid.ULID      `json:"user_id"`
 	PianoID        ulid.ULID      `json:"piano_id"`
 	VisitTime      time.Time      `json:"visit_time"`
-	Rating         int16          `json:"rating"`
+	Rating         *int16         `json:"rating"`
 	Body           *string        `json:"body"`
 	AmbientNoise   *int16         `json:"ambient_noise"`
 	FootTraffic    *int16         `json:"foot_traffic"`
@@ -369,7 +369,7 @@ type ListPublicPianoPostsRow struct {
 	UserID         ulid.ULID      `json:"user_id"`
 	PianoID        ulid.ULID      `json:"piano_id"`
 	VisitTime      time.Time      `json:"visit_time"`
-	Rating         int16          `json:"rating"`
+	Rating         *int16         `json:"rating"`
 	Body           *string        `json:"body"`
 	AmbientNoise   *int16         `json:"ambient_noise"`
 	FootTraffic    *int16         `json:"foot_traffic"`

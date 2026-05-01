@@ -107,7 +107,7 @@ export default function PianoPostDetail() {
 
           <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
             <h2 className="text-sm font-bold text-slate-900">
-              コメント
+              返信
               {post.commentCount > 0 ? (
                 <span className="ml-1 text-slate-500">({post.commentCount})</span>
               ) : null}

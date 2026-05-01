@@ -48,7 +48,7 @@ func FromUpdatePianoPostRequest(ctx context.Context, req *connect.Request[piano_
 			input.VisitTime = post.GetVisitTime().AsTime()
 		case "rating":
 			input.SetRating = true
-			input.Rating = int16(post.GetRating())
+			input.Rating = optInt16(post.Rating)
 		case "body":
 			input.SetBody = true
 			input.Body = post.Body

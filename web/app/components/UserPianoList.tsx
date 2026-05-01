@@ -69,11 +69,11 @@ export function UserPianoList({ customId, listKind, refreshKey, emptyMessage }: 
                   <p className="truncate text-xs text-slate-500">{p.address}</p>
                 ) : null}
               </div>
-              {p.postCount > 0 ? (
+              {p.ratingCount > 0 ? (
                 <div className="flex shrink-0 items-center gap-1 text-xs text-amber-600">
                   <Star size={12} className="fill-amber-500 text-amber-500" />
                   <span className="font-bold">{p.ratingAverage.toFixed(1)}</span>
-                  <span className="text-slate-400">({p.postCount})</span>
+                  <span className="text-slate-400">({p.ratingCount})</span>
                 </div>
               ) : null}
             </Link>

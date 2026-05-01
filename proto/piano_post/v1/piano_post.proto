@@ -38,8 +38,8 @@ message PianoPost {
   string author = 2;
   // 訪問日時 (作成時必須)。
   google.protobuf.Timestamp visit_time = 3;
-  // 1..5 必須。
-  int32 rating = 4;
+  // 1..5 任意 (rating または body のどちらかは必須)。
+  optional int32 rating = 4;
   optional string body = 5;
   // 5 環境属性 (任意、特徴メーター用)。
   optional int32 ambient_noise = 6;

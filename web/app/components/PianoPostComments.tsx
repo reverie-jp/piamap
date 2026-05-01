@@ -107,7 +107,7 @@ export function PianoPostComments({
       {loading ? (
         <p className="text-center text-xs text-slate-400">読み込み中...</p>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-slate-400">まだコメントはありません</p>
+        <p className="text-xs text-slate-400">まだ返信はありません</p>
       ) : (
         <ul className="space-y-3">
           {comments.map((c) => (
@@ -123,8 +123,8 @@ export function PianoPostComments({
 
       <div className="mt-3 space-y-2">
         <TextField
-          aria-label="コメント"
-          placeholder={authed ? "コメントを書く..." : "コメントするにはログインが必要です"}
+          aria-label="返信"
+          placeholder={authed ? "返信を書く..." : "返信するにはログインが必要です"}
           multiline
           rows={2}
           value={body}
@@ -137,7 +137,7 @@ export function PianoPostComments({
             onPress={submit}
             isDisabled={!body.trim() || posting}
           >
-            {posting ? "送信中..." : authed ? "コメントする" : "ログインしてコメント"}
+            {posting ? "送信中..." : authed ? "返信する" : "ログインして返信"}
           </Button>
         </div>
       </div>
@@ -147,7 +147,7 @@ export function PianoPostComments({
         onOpenChange={(open) => {
           if (!open) setDeletingComment(null);
         }}
-        title="コメントを削除"
+        title="返信を削除"
         message="この操作は取り消せません。本当に削除しますか?"
         confirmLabel="削除する"
         destructive

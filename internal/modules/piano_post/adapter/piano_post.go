@@ -17,7 +17,6 @@ func ToPianoPost(view *gateway.PianoPostView) *piano_postv1.PianoPost {
 	pb := &piano_postv1.PianoPost{
 		Name:         resourcename.FormatPianoPost(p.PianoID, p.ID),
 		VisitTime:    timestamppb.New(p.VisitTime),
-		Rating:       int32(p.Rating),
 		Body:         p.Body,
 		Visibility:   toPbVisibility(p.Visibility),
 		CommentCount: p.CommentCount,
@@ -26,6 +25,10 @@ func ToPianoPost(view *gateway.PianoPostView) *piano_postv1.PianoPost {
 		CreateTime:   timestamppb.New(p.CreateTime),
 		UpdateTime:   timestamppb.New(p.UpdateTime),
 		PianoName:    resourcename.FormatPiano(p.PianoID),
+	}
+	if v := p.Rating; v != nil {
+		x := int32(*v)
+		pb.Rating = &x
 	}
 	if v := p.AmbientNoise; v != nil {
 		x := int32(*v)

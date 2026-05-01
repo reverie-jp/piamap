@@ -110,8 +110,10 @@ message Piano {
 
   // 集計
   int32 post_count = 21;
-  // 平均評価 (post_count = 0 のときは 0.0、UI 側で「未評価」表示)。
+  // 平均評価 (rating_count = 0 のときは 0.0、UI 側で「未評価」表示)。
   double rating_average = 22;
+  // rating が付いた投稿数 (rating_average の母数)。
+  int32 rating_count = 34;
   // 5 環境属性の平均 (count = 0 のとき 0)。
   double ambient_noise_average = 23;
   double foot_traffic_average = 24;

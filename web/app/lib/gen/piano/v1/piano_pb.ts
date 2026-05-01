@@ -410,11 +410,18 @@ export class Piano extends Message<Piano> {
   postCount = 0;
 
   /**
-   * 平均評価 (post_count = 0 のときは 0.0、UI 側で「未評価」表示)。
+   * 平均評価 (rating_count = 0 のときは 0.0、UI 側で「未評価」表示)。
    *
    * @generated from field: double rating_average = 22;
    */
   ratingAverage = 0;
+
+  /**
+   * rating が付いた投稿数 (rating_average の母数)。
+   *
+   * @generated from field: int32 rating_count = 34;
+   */
+  ratingCount = 0;
 
   /**
    * 5 環境属性の平均 (count = 0 のとき 0)。
@@ -507,6 +514,7 @@ export class Piano extends Message<Piano> {
     { no: 20, name: "creator", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 21, name: "post_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 22, name: "rating_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 34, name: "rating_count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 23, name: "ambient_noise_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
     { no: 24, name: "foot_traffic_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
     { no: 25, name: "resonance_average", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },

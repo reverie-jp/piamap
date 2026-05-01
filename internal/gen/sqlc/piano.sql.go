@@ -128,6 +128,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -172,6 +173,7 @@ type GetPianoByIDRow struct {
 	RemoveTime          *time.Time        `json:"remove_time"`
 	CreatorUserID       *ulid.ULID        `json:"creator_user_id"`
 	PostCount           int32             `json:"post_count"`
+	RatingCount         int32             `json:"rating_count"`
 	RatingSum           int32             `json:"rating_sum"`
 	AmbientNoiseCount   int32             `json:"ambient_noise_count"`
 	AmbientNoiseSum     int32             `json:"ambient_noise_sum"`
@@ -217,6 +219,7 @@ func (q *Queries) GetPianoByID(ctx context.Context, id ulid.ULID) (GetPianoByIDR
 		&i.RemoveTime,
 		&i.CreatorUserID,
 		&i.PostCount,
+		&i.RatingCount,
 		&i.RatingSum,
 		&i.AmbientNoiseCount,
 		&i.AmbientNoiseSum,
@@ -262,6 +265,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -293,7 +297,7 @@ WHERE status = 'active'
   AND ($7::text IS NULL OR piano_brand ILIKE $7::text)
   AND (
       $8::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= $8::float8)
+      OR (rating_count > 0 AND rating_sum::float8 / rating_count >= $8::float8)
   )
   AND (
       $9::float8 IS NULL
@@ -359,6 +363,7 @@ type ListPianosInBBoxRow struct {
 	RemoveTime          *time.Time        `json:"remove_time"`
 	CreatorUserID       *ulid.ULID        `json:"creator_user_id"`
 	PostCount           int32             `json:"post_count"`
+	RatingCount         int32             `json:"rating_count"`
 	RatingSum           int32             `json:"rating_sum"`
 	AmbientNoiseCount   int32             `json:"ambient_noise_count"`
 	AmbientNoiseSum     int32             `json:"ambient_noise_sum"`
@@ -426,6 +431,7 @@ func (q *Queries) ListPianosInBBox(ctx context.Context, arg ListPianosInBBoxPara
 			&i.RemoveTime,
 			&i.CreatorUserID,
 			&i.PostCount,
+			&i.RatingCount,
 			&i.RatingSum,
 			&i.AmbientNoiseCount,
 			&i.AmbientNoiseSum,
@@ -478,6 +484,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -516,7 +523,7 @@ WHERE status = 'active'
   AND ($6::text IS NULL OR piano_brand ILIKE $6::text)
   AND (
       $7::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= $7::float8)
+      OR (rating_count > 0 AND rating_sum::float8 / rating_count >= $7::float8)
   )
   AND (
       $8::float8 IS NULL
@@ -581,6 +588,7 @@ type ListPianosNearbyRow struct {
 	RemoveTime          *time.Time        `json:"remove_time"`
 	CreatorUserID       *ulid.ULID        `json:"creator_user_id"`
 	PostCount           int32             `json:"post_count"`
+	RatingCount         int32             `json:"rating_count"`
 	RatingSum           int32             `json:"rating_sum"`
 	AmbientNoiseCount   int32             `json:"ambient_noise_count"`
 	AmbientNoiseSum     int32             `json:"ambient_noise_sum"`
@@ -647,6 +655,7 @@ func (q *Queries) ListPianosNearby(ctx context.Context, arg ListPianosNearbyPara
 			&i.RemoveTime,
 			&i.CreatorUserID,
 			&i.PostCount,
+			&i.RatingCount,
 			&i.RatingSum,
 			&i.AmbientNoiseCount,
 			&i.AmbientNoiseSum,
@@ -699,6 +708,7 @@ SELECT
     remove_time,
     creator_user_id,
     post_count,
+    rating_count,
     rating_sum,
     ambient_noise_count,
     ambient_noise_sum,
@@ -724,7 +734,7 @@ WHERE status = 'active'
   AND ($4::text IS NULL OR piano_brand ILIKE $4::text)
   AND (
       $5::float8 IS NULL
-      OR (post_count > 0 AND rating_sum::float8 / post_count >= $5::float8)
+      OR (rating_count > 0 AND rating_sum::float8 / rating_count >= $5::float8)
   )
   AND (
       $6::float8 IS NULL
@@ -787,6 +797,7 @@ type SearchPianosByTextRow struct {
 	RemoveTime          *time.Time        `json:"remove_time"`
 	CreatorUserID       *ulid.ULID        `json:"creator_user_id"`
 	PostCount           int32             `json:"post_count"`
+	RatingCount         int32             `json:"rating_count"`
 	RatingSum           int32             `json:"rating_sum"`
 	AmbientNoiseCount   int32             `json:"ambient_noise_count"`
 	AmbientNoiseSum     int32             `json:"ambient_noise_sum"`
@@ -852,6 +863,7 @@ func (q *Queries) SearchPianosByText(ctx context.Context, arg SearchPianosByText
 			&i.RemoveTime,
 			&i.CreatorUserID,
 			&i.PostCount,
+			&i.RatingCount,
 			&i.RatingSum,
 			&i.AmbientNoiseCount,
 			&i.AmbientNoiseSum,

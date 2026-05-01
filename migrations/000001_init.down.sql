@@ -28,7 +28,6 @@ DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS piano_user_lists;
 DROP TABLE IF EXISTS piano_watches;
 DROP TABLE IF EXISTS piano_edits;
-DROP TABLE IF EXISTS piano_comments;
 DROP TABLE IF EXISTS piano_post_comments;
 DROP TABLE IF EXISTS piano_post_likes;
 DROP TABLE IF EXISTS piano_post_images;

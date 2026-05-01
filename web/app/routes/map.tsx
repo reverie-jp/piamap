@@ -498,7 +498,7 @@ function PianoSummary({ piano }: { piano: Piano }) {
     <div className="space-y-3">
       <div className="flex items-center gap-2 text-sm text-slate-600">
         <span>
-          {piano.postCount > 0 ? `★ ${avg.toFixed(1)} (${piano.postCount}件)` : "未評価"}
+          {piano.ratingCount > 0 ? `★ ${avg.toFixed(1)} (${piano.ratingCount}件)` : "未評価"}
         </span>
       </div>
       {piano.description ? (

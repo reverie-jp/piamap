@@ -104,10 +104,12 @@ export function PianoPostCard({
           )}
           {visitedLabel ? <span className="ml-2">{visitedLabel} 訪問</span> : null}
         </div>
-        <div className="flex items-center gap-1 text-amber-600">
-          <Star size={14} className="fill-amber-500 text-amber-500" />
-          <span className="font-bold">{post.rating}</span>
-        </div>
+        {post.rating !== undefined ? (
+          <div className="flex items-center gap-1 text-amber-600">
+            <Star size={14} className="fill-amber-500 text-amber-500" />
+            <span className="font-bold">{post.rating}</span>
+          </div>
+        ) : null}
       </header>
       {showPiano && pianoIdParsed ? (
         <Link
@@ -185,7 +187,7 @@ function CommentLink({ count, to }: { count: number; to: string }) {
     );
   }
   return (
-    <Link to={to} className={`${cls} cursor-pointer`} aria-label="コメントを見る">
+    <Link to={to} className={`${cls} cursor-pointer`} aria-label="返信を見る">
       <MessageSquare size={14} />
       {count > 0 ? <span className="font-semibold">{count}</span> : null}
     </Link>
